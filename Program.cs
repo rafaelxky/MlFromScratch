@@ -1,7 +1,6 @@
 ﻿
 Console.WriteLine("Started:");
-var Network = new Network(3,[10,10,10],3);
-bool running = true;
+var Network = new Network(3,[3],3);
 // 1 is more positive the closer to 1 it is
 // 2 is more positive the closer to 0.5 it is
 // 3 is more positive the closer to 0.1 it is
@@ -11,7 +10,8 @@ bool running = true;
 // negative example
 // evaluation
 // here 1 should be ~= 0.75, 2 should be 1-0.5, 3 should be ~= 0.25
-double[] values3 = [0.65, 0.65, 0.65];
+//double[] values3 = [0.65, 0.65, 0.65];
+double[] values3 = [0.87, 0.65, 0.20];
 
 double[][] inputs = new double[][]
 {
@@ -24,7 +24,7 @@ double[][] inputs = new double[][]
     new double[] {0.7, 0.6, 0.1},
     new double[] {0.4, 0.9, 0.4},
     new double[] {0.1, 0.3, 0.8},
-    new double[] {0.6, 0.4, 0.6}
+    new double[] {0.6, 0.4, 0.6},
 };
 double[][] targets = new double[][]
 {
@@ -37,7 +37,7 @@ double[][] targets = new double[][]
     new double[] {0.7, 0.6, 0.1},
     new double[] {0.4, 0.9, 0.4},
     new double[] {0.1, 0.3, 0.8},
-    new double[] {0.6, 0.4, 0.6}
+    new double[] {0.6, 0.4, 0.6},
 };
 
 // linear relation
@@ -48,6 +48,15 @@ double[][] inputs2 = new double[][]
     new double[] {0.5,0.5,0.5},
     new double[] {0.75,0.75,0.75},
     new double[] {0.25,0.25,0.25},
+    new double[] {0.1, 0.5, 0.9},
+    new double[] {0.9, 0.2, 0.1},
+    new double[] {0.1, 0.2, 0.3},
+    new double[] {0.9, 0.8, 0.7},
+    new double[] {0.3, 0.2, 0.1},
+    new double[] {0.7, 0.8, 0.9},
+    new double[] {0.87, 0.65, 0.20},
+    new double[] {0.3892183, 0.9123901, 0.019139818457},
+    new double[] {0.617312634, 0.45496840, 0.9091745859},
 };
 
 double[][] targets2 = new double[][]
@@ -57,11 +66,20 @@ double[][] targets2 = new double[][]
     new double[] {0.5,0.5,0.5},
     new double[] {0.75,0.75,0.75},
     new double[] {0.25,0.25,0.25},
+    new double[] {0.1, 0.5, 0.9},
+    new double[] {0.9, 0.2, 0.1},
+    new double[] {0.1, 0.2, 0.3},
+    new double[] {0.9, 0.8, 0.7},
+    new double[] {0.3, 0.2, 0.1},
+    new double[] {0.7, 0.8, 0.9},
+    new double[] {0.87, 0.65, 0.20},
+    new double[] {0.3892183, 0.9123901, 0.019139818457},
+    new double[] {0.617312634, 0.45496840, 0.9091745859},
 };
 
 var learningRate = 0.01;
 var lenght = inputs2.Length;
-for (int epoch = 0; epoch < 100000; epoch++)
+for (int epoch = 0; epoch < 30000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
