@@ -12,3 +12,4 @@
 /home/rafael/Code/Ai/obj/Debug/net9.0/Ai.pdb
 /home/rafael/Code/Ai/obj/Debug/net9.0/Ai.genruntimeconfig.cache
 /home/rafael/Code/Ai/obj/Debug/net9.0/ref/Ai.dll
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.sourcelink.json

@@ -1,14 +1,81 @@
-﻿var Network = new Network(5, 3);
+﻿
+Console.WriteLine("Started:");
+var Network = new Network(3,[10,10,10],3);
 bool running = true;
-double[] expected = [0.5,0.5,0.5];
-while (running)
+// 1 is more positive the closer to 1 it is
+// 2 is more positive the closer to 0.5 it is
+// 3 is more positive the closer to 0.1 it is
+
+
+// positive example 
+// negative example
+// evaluation
+// here 1 should be ~= 0.75, 2 should be 1-0.5, 3 should be ~= 0.25
+double[] values3 = [0.65, 0.65, 0.65];
+
+double[][] inputs = new double[][]
 {
-    var result = Network.ForwardPass([1,0.5,0.75]);
-    Network.BackPropagation(expected,0.1);
-    running = !AreAlmostEqual(result, expected);
+    new double[] {1.0, 0.5, 0.1},
+    new double[] {0.1, 1.0, 1.0},
+    new double[] {0.5, 0.5, 0.5},
+    new double[] {0.9, 0.1, 0.2},
+    new double[] {0.2, 0.8, 0.3},
+    new double[] {0.3, 0.2, 0.9},
+    new double[] {0.7, 0.6, 0.1},
+    new double[] {0.4, 0.9, 0.4},
+    new double[] {0.1, 0.3, 0.8},
+    new double[] {0.6, 0.4, 0.6}
+};
+double[][] targets = new double[][]
+{
+    new double[] {1.0, 1.0, 1.0},
+    new double[] {0.1, 0.5, 0.1},
+    new double[] {0.5, 0.5, 0.5},
+    new double[] {0.9, 0.1, 0.2},
+    new double[] {0.2, 0.8, 0.3},
+    new double[] {0.3, 0.2, 0.9},
+    new double[] {0.7, 0.6, 0.1},
+    new double[] {0.4, 0.9, 0.4},
+    new double[] {0.1, 0.3, 0.8},
+    new double[] {0.6, 0.4, 0.6}
+};
+
+// linear relation
+double[][] inputs2 = new double[][]
+{
+    new double[] {0.9,0.9,0.9},
+    new double[] {0.01,0.01,0.01},
+    new double[] {0.5,0.5,0.5},
+    new double[] {0.75,0.75,0.75},
+    new double[] {0.25,0.25,0.25},
+};
+
+double[][] targets2 = new double[][]
+{
+    new double[] {0.9,0.9,0.9},
+    new double[] {0.01,0.01,0.01},
+    new double[] {0.5,0.5,0.5},
+    new double[] {0.75,0.75,0.75},
+    new double[] {0.25,0.25,0.25},
+};
+
+var learningRate = 0.01;
+var lenght = inputs2.Length;
+for (int epoch = 0; epoch < 100000; epoch++)
+{
+    for (int i = 0; i < inputs2.Length; i++)
+    {
+        var result = Network.ForwardPass(inputs2[i]);
+        Network.BackPropagation(targets2[i], learningRate);
+    }
 }
 
+
+var result3 = Network.ForwardPass(values3);
+
 Network.Print();
+Console.WriteLine("Final:" + string.Join(" ", result3));
+Console.WriteLine("For: depth - " + Network.Depth + " - learningRate - " + learningRate);
 
 bool AreAlmostEqual(double[] a, double[] b, double tolerance = 1e-6)
 {
@@ -21,4 +88,18 @@ bool AreAlmostEqual(double[] a, double[] b, double tolerance = 1e-6)
     }
 
     return true;
+}
+
+void Train(double[] values, double[] expected, double learningRate,double round)
+{
+    bool running = true;
+    var i = 0;
+    while (running)
+    {
+        var result1 = Network.ForwardPass(values);
+        Network.BackPropagation(expected, 0.01);
+        running = !AreAlmostEqual(result1, expected, 0.01);
+        i++;
+        Console.WriteLine("i:" + i);
+    }
 }

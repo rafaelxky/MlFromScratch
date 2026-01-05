@@ -1,18 +1,25 @@
 public class Network
 {
     public List<Layer> NeuralNetwork;
-    int Depth;
-    int Length;
-    public Network(int depth, int lenght)
+    public int Depth;
+
+    public Network(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
         NeuralNetwork = new();
-        Depth = depth;
-        Length = lenght;
         Random random = new();
-        for (int i = 0; i < Depth; i++)
+
+        // Input -> first hidden
+        int previousSize = inputSize;
+
+        foreach (var layerSize in hiddenLayerSizes)
         {
-            NeuralNetwork.Add(new(Length, random));
+            NeuralNetwork.Add(new Layer(layerSize, random, previousSize));
+            previousSize = layerSize;
         }
+
+        // Output layer
+        NeuralNetwork.Add(new Layer(outputSize, random, previousSize));
+        Depth = NeuralNetwork.Count;
     }
     public double[] ForwardPass(double[] values)
     {
@@ -43,7 +50,7 @@ public class Network
     {
         foreach (var layer in NeuralNetwork)
         {
-            layer.Print();   
+            layer.Print();
         }
     }
 }

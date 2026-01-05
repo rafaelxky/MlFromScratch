@@ -5,14 +5,14 @@ public class Layer
     List<Neuron> NeuronLayer;
     int Length;
     double[]? Inputs;
-    public Layer(int length, Random random)
+    public Layer(int numNeurons, Random random, int inputSize)
     {
         NeuronLayer = new();
-        Length = length;
-        for (var i = 0; i < Length; i++)
+        for (int i = 0; i < numNeurons; i++)
         {
-            NeuronLayer.Add(new(length, random));
+            NeuronLayer.Add(new Neuron(inputSize, random));
         }
+        Length = NeuronLayer.Count;
     }
 
     public double[] ForwardPass(double[] inputs)
@@ -62,6 +62,6 @@ public class Layer
         {
             Console.WriteLine("Wrights:" + string.Join(" ", neuron.Weights));
             Console.WriteLine("Bias:" + neuron.Bias);
-        }   
+        }
     }
 }
