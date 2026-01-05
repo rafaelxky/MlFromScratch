@@ -1,6 +1,6 @@
 ﻿
 Console.WriteLine("Started:");
-var Network = new Network(3,[3],3);
+var Network = new Network(3,[20],3);
 // 1 is more positive the closer to 1 it is
 // 2 is more positive the closer to 0.5 it is
 // 3 is more positive the closer to 0.1 it is
@@ -11,7 +11,6 @@ var Network = new Network(3,[3],3);
 // evaluation
 // here 1 should be ~= 0.75, 2 should be 1-0.5, 3 should be ~= 0.25
 //double[] values3 = [0.65, 0.65, 0.65];
-double[] values3 = [0.87, 0.65, 0.20];
 
 double[][] inputs = new double[][]
 {
@@ -77,6 +76,10 @@ double[][] targets2 = new double[][]
     new double[] {0.617312634, 0.45496840, 0.9091745859},
 };
 
+double[] values1 = [0.87, 0.65, 0.20];
+double[] values2 = [0.12,0.12,0.12];
+double[] values3 = [0.97,0.85,0.32];
+
 var learningRate = 0.01;
 var lenght = inputs2.Length;
 for (int epoch = 0; epoch < 30000; epoch++)
@@ -89,9 +92,13 @@ for (int epoch = 0; epoch < 30000; epoch++)
 }
 
 
+var result1 = Network.ForwardPass(values1);
+var result2 = Network.ForwardPass(values2);
 var result3 = Network.ForwardPass(values3);
 
 Network.Print();
+Console.WriteLine("Final:" + string.Join(" ", result1));
+Console.WriteLine("Final:" + string.Join(" ", result2));
 Console.WriteLine("Final:" + string.Join(" ", result3));
 Console.WriteLine("For: depth - " + Network.Depth + " - learningRate - " + learningRate);
 
