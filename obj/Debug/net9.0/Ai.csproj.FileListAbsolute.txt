@@ -1,0 +1,14 @@
+/home/rafael/Code/Ai/bin/Debug/net9.0/Ai
+/home/rafael/Code/Ai/bin/Debug/net9.0/Ai.deps.json
+/home/rafael/Code/Ai/bin/Debug/net9.0/Ai.runtimeconfig.json
+/home/rafael/Code/Ai/bin/Debug/net9.0/Ai.dll
+/home/rafael/Code/Ai/bin/Debug/net9.0/Ai.pdb
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.GeneratedMSBuildEditorConfig.editorconfig
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.AssemblyInfoInputs.cache
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.AssemblyInfo.cs
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.csproj.CoreCompileInputs.cache
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.dll
+/home/rafael/Code/Ai/obj/Debug/net9.0/refint/Ai.dll
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.pdb
+/home/rafael/Code/Ai/obj/Debug/net9.0/Ai.genruntimeconfig.cache
+/home/rafael/Code/Ai/obj/Debug/net9.0/ref/Ai.dll
