@@ -3,12 +3,17 @@ using Microsoft.VisualBasic;
 
 public class Neuron
 {
-    public double[] Weights;
-    double[] Values;
-    public double Bias;
-    double Z;
+    public double[] Weights { get; set; }
+    public double[] Values;
+    public double Bias { get; set; }
+    public double Z;
     public double Output;
     public double Delta;
+
+    public Neuron()
+    {
+
+    }
     public Neuron(int size, Random rand)
     {
         Weights = new double[size];

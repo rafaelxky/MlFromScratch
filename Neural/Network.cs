@@ -1,8 +1,14 @@
+using System.Text.Json;
+
 public class Network
 {
-    public List<Layer> NeuralNetwork;
-    public int Depth;
+    public List<Layer> NeuralNetwork { get; set; }
+    public int Depth { get; set; }
 
+    public Network()
+    {
+        
+    }
     public Network(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
         NeuralNetwork = new();
@@ -52,5 +58,30 @@ public class Network
         {
             layer.Print();
         }
+    }
+
+    public void Save(string filePath)
+    {
+        var opts = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+        var json = JsonSerializer.Serialize(this, opts);
+        File.WriteAllText(filePath, json);
+    }
+    public static Network NewFromJson(string filePath)
+    {
+            var jsonText = File.ReadAllText(filePath);
+            var network = JsonSerializer.Deserialize<Network>(jsonText);
+            return network!;
+    }
+    public static Network NewFromJsonOrDefault(string filePath, Network network)
+    {
+        if (File.Exists(filePath))
+        {
+            var jsonText = File.ReadAllText(filePath);
+            return JsonSerializer.Deserialize<Network>(jsonText)!;
+        }
+        return network;
     }
 }

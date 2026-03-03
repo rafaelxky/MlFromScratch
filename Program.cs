@@ -1,10 +1,10 @@
 ﻿
 Console.WriteLine("Started:");
-var Network = new Network(3,[20],3);
+//var network = new Network(3,[20],3);
+var network = Network.NewFromJson(Path.Join("NetworkSave.json"));
 // 1 is more positive the closer to 1 it is
 // 2 is more positive the closer to 0.5 it is
 // 3 is more positive the closer to 0.1 it is
-
 
 // positive example 
 // negative example
@@ -86,21 +86,23 @@ for (int epoch = 0; epoch < 30000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
-        var result = Network.ForwardPass(inputs2[i]);
-        Network.BackPropagation(targets2[i], learningRate);
+        var result = network.ForwardPass(inputs2[i]);
+        network.BackPropagation(targets2[i], learningRate);
     }
 }
 
 
-var result1 = Network.ForwardPass(values1);
-var result2 = Network.ForwardPass(values2);
-var result3 = Network.ForwardPass(values3);
+var result1 = network.ForwardPass(values1);
+var result2 = network.ForwardPass(values2);
+var result3 = network.ForwardPass(values3);
 
-Network.Print();
+network.Save(Path.Join("NetworkSave.json"));
+
+network.Print();
 Console.WriteLine("Final:" + string.Join(" ", result1));
 Console.WriteLine("Final:" + string.Join(" ", result2));
 Console.WriteLine("Final:" + string.Join(" ", result3));
-Console.WriteLine("For: depth - " + Network.Depth + " - learningRate - " + learningRate);
+Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
 
 bool AreAlmostEqual(double[] a, double[] b, double tolerance = 1e-6)
 {
@@ -121,8 +123,8 @@ void Train(double[] values, double[] expected, double learningRate,double round)
     var i = 0;
     while (running)
     {
-        var result1 = Network.ForwardPass(values);
-        Network.BackPropagation(expected, 0.01);
+        var result1 = network.ForwardPass(values);
+        network.BackPropagation(expected, 0.01);
         running = !AreAlmostEqual(result1, expected, 0.01);
         i++;
         Console.WriteLine("i:" + i);

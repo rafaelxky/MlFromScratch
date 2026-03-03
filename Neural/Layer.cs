@@ -2,9 +2,13 @@ using Microsoft.VisualBasic;
 
 public class Layer
 {
-    List<Neuron> NeuronLayer;
-    int Length;
+    public List<Neuron> NeuronLayer { get; set; }
+    public int Length { get; set; }
     double[]? Inputs;
+    public Layer()
+    {
+        
+    }
     public Layer(int numNeurons, Random random, int inputSize)
     {
         NeuronLayer = new();
