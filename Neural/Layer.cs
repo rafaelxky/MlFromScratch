@@ -1,5 +1,6 @@
 using Microsoft.VisualBasic;
 
+namespace MlNetwork{
 public class Layer
 {
     public List<Neuron> NeuronLayer { get; set; }
@@ -68,4 +69,5 @@ public class Layer
             Console.WriteLine("Bias:" + neuron.Bias);
         }
     }
+}
 }

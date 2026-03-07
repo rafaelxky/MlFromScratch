@@ -1,7 +1,11 @@
 ﻿
+using Ml1_58;
+using MlNetwork;
+
 Console.WriteLine("Started:");
 //var network = new Network(3,[20],3);
-var network = Network.NewFromJson(Path.Join("NetworkSave.json"));
+//var network = Network.NewFromJson(Path.Join("NetworkSave.json"));
+var network = new Network1_58(3,[20],3);
 // 1 is more positive the closer to 1 it is
 // 2 is more positive the closer to 0.5 it is
 // 3 is more positive the closer to 0.1 it is

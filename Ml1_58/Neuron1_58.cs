@@ -1,9 +1,9 @@
 
 using Microsoft.VisualBasic;
 
-namespace MlNetwork
+namespace Ml1_58
 {
-    public class Neuron
+    public class Neuron1_58
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -12,11 +12,11 @@ namespace MlNetwork
         public double Output;
         public double Delta;
 
-        public Neuron()
+        public Neuron1_58()
         {
-            
+
         }
-        public Neuron(int size, Random rand)
+        public Neuron1_58(int size, Random rand)
         {
             Weights = new double[size];
             for (int i = 0; i < size; i++)
@@ -32,7 +32,7 @@ namespace MlNetwork
             double value = 0;
             for (int i = 0; i < values.Length; i++)
             {
-                value += values[i] * Weights[i];
+                value += values[i] * Math.Sign(Weights[i]);
             }
             value += Bias;
             Z = value;

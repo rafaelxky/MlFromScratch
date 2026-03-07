@@ -1,87 +1,90 @@
 using System.Text.Json;
 
-public class Network
+namespace MlNetwork
 {
-    public List<Layer> NeuralNetwork { get; set; }
-    public int Depth { get; set; }
-
-    public Network()
+    public class Network
     {
-        
-    }
-    public Network(int inputSize, int[] hiddenLayerSizes, int outputSize)
-    {
-        NeuralNetwork = new();
-        Random random = new();
+        public List<Layer> NeuralNetwork { get; set; }
+        public int Depth { get; set; }
 
-        // Input -> first hidden
-        int previousSize = inputSize;
-
-        foreach (var layerSize in hiddenLayerSizes)
+        public Network()
         {
-            NeuralNetwork.Add(new Layer(layerSize, random, previousSize));
-            previousSize = layerSize;
+
+        }
+        public Network(int inputSize, int[] hiddenLayerSizes, int outputSize)
+        {
+            NeuralNetwork = new();
+            Random random = new();
+
+            // Input -> first hidden
+            int previousSize = inputSize;
+
+            foreach (var layerSize in hiddenLayerSizes)
+            {
+                NeuralNetwork.Add(new Layer(layerSize, random, previousSize));
+                previousSize = layerSize;
+            }
+
+            // Output layer
+            NeuralNetwork.Add(new Layer(outputSize, random, previousSize));
+            Depth = NeuralNetwork.Count;
+        }
+        public double[] ForwardPass(double[] values)
+        {
+            double[] last = values;
+            foreach (var layer in NeuralNetwork)
+            {
+                last = layer.ForwardPass(last);
+            }
+            Console.WriteLine(string.Join(", ", last));
+            return last;
         }
 
-        // Output layer
-        NeuralNetwork.Add(new Layer(outputSize, random, previousSize));
-        Depth = NeuralNetwork.Count;
-    }
-    public double[] ForwardPass(double[] values)
-    {
-        double[] last = values;
-        foreach (var layer in NeuralNetwork)
+        public void BackPropagation(double[] expected, double learningRate)
         {
-            last = layer.ForwardPass(last);
+            for (int i = Depth - 1; i >= 0; i--) // start from output layer
+            {
+                Layer layer = NeuralNetwork[i];
+                Layer? nextLayer = (i < Depth - 1) ? NeuralNetwork[i + 1] : null;
+
+                // Pass expected only to the output layer
+                double[]? targets = (i == Depth - 1) ? expected : null;
+
+                layer.BackPropagation(nextLayer, targets, learningRate);
+            }
         }
-        Console.WriteLine(string.Join(", ", last));
-        return last;
-    }
 
-    public void BackPropagation(double[] expected, double learningRate)
-    {
-        for (int i = Depth - 1; i >= 0; i--) // start from output layer
+        public void Print()
         {
-            Layer layer = NeuralNetwork[i];
-            Layer? nextLayer = (i < Depth - 1) ? NeuralNetwork[i + 1] : null;
-
-            // Pass expected only to the output layer
-            double[]? targets = (i == Depth - 1) ? expected : null;
-
-            layer.BackPropagation(nextLayer, targets, learningRate);
+            foreach (var layer in NeuralNetwork)
+            {
+                layer.Print();
+            }
         }
-    }
 
-    public void Print()
-    {
-        foreach (var layer in NeuralNetwork)
+        public void Save(string filePath)
         {
-            layer.Print();
+            var opts = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+            var json = JsonSerializer.Serialize(this, opts);
+            File.WriteAllText(filePath, json);
         }
-    }
-
-    public void Save(string filePath)
-    {
-        var opts = new JsonSerializerOptions
+        public static Network NewFromJson(string filePath)
         {
-            WriteIndented = true
-        };
-        var json = JsonSerializer.Serialize(this, opts);
-        File.WriteAllText(filePath, json);
-    }
-    public static Network NewFromJson(string filePath)
-    {
             var jsonText = File.ReadAllText(filePath);
             var network = JsonSerializer.Deserialize<Network>(jsonText);
             return network!;
-    }
-    public static Network NewFromJsonOrDefault(string filePath, Network network)
-    {
-        if (File.Exists(filePath))
-        {
-            var jsonText = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<Network>(jsonText)!;
         }
-        return network;
+        public static Network NewFromJsonOrDefault(string filePath, Network network)
+        {
+            if (File.Exists(filePath))
+            {
+                var jsonText = File.ReadAllText(filePath);
+                return JsonSerializer.Deserialize<Network>(jsonText)!;
+            }
+            return network;
+        }
     }
 }
