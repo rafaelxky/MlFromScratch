@@ -17,11 +17,11 @@ Console.WriteLine("Started:");
 //var network = network1_58.Bake();
 //var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
 
-//ITrainingNetwork trainingNetwork =
-//NetworkBuilder.TrainingNetwork1_58Default(3,[10,10,10],3);
-//var network = trainingNetwork;
+ITrainingNetwork trainingNetwork =
+NetworkBuilder.TrainingNetwork1_58Default(3, [100,100,100,100,100,100,100,100,100,100], 3);
+var network = trainingNetwork;
 
-var network = NetworkSerializer.LoadTrainingNetworkDefault("newSerTest.json");
+//var network = NetworkSerializer.Load1_58TrainingDefault("newSerTest.json");
 
 double[][] inputs =
 [
@@ -104,9 +104,9 @@ double[][] targets2 =
 
 // learning
 
-var learningRate = 0.05;
+var learningRate = 0.1;
 var lenght = inputs2.Length;
-for (int epoch = 0; epoch < 10000; epoch++)
+for (int epoch = 0; epoch < 500; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
@@ -115,6 +115,7 @@ for (int epoch = 0; epoch < 10000; epoch++)
         Console.WriteLine(JsonSerializer.Serialize(result) +" - "+ JsonSerializer.Serialize(targets2[i]));
     }
 }
+
 
 
 
