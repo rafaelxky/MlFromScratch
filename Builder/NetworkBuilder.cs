@@ -12,15 +12,14 @@ public class NetworkBuilder
     private int[] _hiddenLayerSizes = [10,10,10];
     private int _outputSize = 3;
 
-    public TrainingNetwork BuildTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
+    public ITrainingNetwork BuildTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
         _inputSize = inputSize;
         _hiddenLayerSizes = hiddenLayerSizes;
         _outputSize = outputSize;
         return BuildTrainingNetwork();
     }
-
-    public TrainingNetwork BuildTrainingNetwork()
+    public ITrainingNetwork BuildTrainingNetwork()
     {
         if (_trainingLayerFactory == null)
         {
@@ -32,7 +31,7 @@ public class NetworkBuilder
         }
         return new TrainingNetwork(_inputSize, _hiddenLayerSizes,_outputSize, _trainingLayerFactory);
     }
-    public static TrainingNetwork DefaultTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
+    public static ITrainingNetwork DefaultTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
         var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuronFactory());
         return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
