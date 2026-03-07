@@ -64,7 +64,7 @@ public class Layer
     {
         foreach (var neuron in NeuronLayer)
         {
-            Console.WriteLine("Wrights:" + string.Join(" ", neuron.Weights));
+            Console.WriteLine("Weights:" + string.Join(" ", neuron.Weights));
             Console.WriteLine("Bias:" + neuron.Bias);
         }
     }
