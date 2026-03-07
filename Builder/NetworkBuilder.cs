@@ -34,13 +34,13 @@ public class NetworkBuilder
     }
     public static TrainingNetwork DefaultTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
-        var basicLayerFactory = new BasicTrainingLayerFactory(new BasicTrainingNeuronFactory());
+        var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuronFactory());
         return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
     }
     
     public NetworkBuilder BasicTrainingNeuron()
     {
-        _trainingNeuronFactory = new BasicTrainingNeuronFactory();
+        _trainingNeuronFactory = new TrainingNeuronFactory();
         return this;
     }
     public NetworkBuilder TrainingNeuron1_58()
@@ -54,7 +54,7 @@ public class NetworkBuilder
         {
             throw new Exception("Tried creating basic training layer factory before setting neuron factory!");
         }
-        this._trainingLayerFactory = new BasicTrainingLayerFactory(_trainingNeuronFactory);
+        this._trainingLayerFactory = new TrainingLayerFactory(_trainingNeuronFactory);
         return this;
     }
     public NetworkBuilder NeuronFactory(INeuronFactory neuronFactory)

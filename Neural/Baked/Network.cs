@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-public class Network
+public class Network: INetwork
 {
     public ILayer[] NeuralNetwork { get; set; }
     public int Depth => NeuralNetwork.Length;
@@ -26,5 +26,10 @@ public class Network
         {
             layer.Print();
         }
+    }
+
+    public ILayer[] GetLayers()
+    {
+        return NeuralNetwork;
     }
 }

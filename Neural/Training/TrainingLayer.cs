@@ -5,7 +5,7 @@ namespace MlNetworkTraining
     public class TrainingLayer : ITrainingLayer
     {
         public ITrainingNeuron[] NeuronLayer { get; set; }
-        public int Length { get; set; }
+        public int Length => NeuronLayer.Length;
         public TrainingLayer()
         {
 
@@ -21,7 +21,6 @@ namespace MlNetworkTraining
             {
                 NeuronLayer[i] = neuronFactory.NewNeuron(inputSize, random);
             }
-            Length = numNeurons;
         }
 
         public double[] ForwardPass(double[] inputs)

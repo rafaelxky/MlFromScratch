@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace MlNetworkTraining
 {
-    public class TrainingNetwork
+    public class TrainingNetwork: ITrainingNetwork
     {
         public ITrainingLayer[] NeuralNetwork { get; set; }
         public int Depth;
@@ -64,29 +64,9 @@ namespace MlNetworkTraining
             }
         }
 
-        public void Save(string filePath)
+        public ILayer[] GetLayers()
         {
-            var opts = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            var json = JsonSerializer.Serialize(this, opts);
-            File.WriteAllText(filePath, json);
-        }
-        public static TrainingNetwork NewFromJson(string filePath)
-        {
-            var jsonText = File.ReadAllText(filePath);
-            var network = JsonSerializer.Deserialize<TrainingNetwork>(jsonText);
-            return network!;
-        }
-        public static TrainingNetwork NewFromJsonOrDefault(string filePath, TrainingNetwork network)
-        {
-            if (File.Exists(filePath))
-            {
-                var jsonText = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<TrainingNetwork>(jsonText)!;
-            }
-            return network;
+            return NeuralNetwork;
         }
     }
 }

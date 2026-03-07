@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/rafael/Code/ML/Ai.csproj",
+      "projectUniqueName": "/home/rafael/Code/ml/Ai.csproj",
       "projectName": "Ai",
-      "projectPath": "/home/rafael/Code/ML/Ai.csproj",
+      "projectPath": "/home/rafael/Code/ml/Ai.csproj",
       "packagesPath": "/home/rafael/.nuget/packages/",
-      "outputPath": "/home/rafael/Code/ML/obj/",
+      "outputPath": "/home/rafael/Code/ml/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/rafael/.nuget/NuGet/NuGet.Config"
@@ -44,7 +44,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -60,12 +60,18 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.9, 9.0.9]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/home/rafael/.dotnet/sdk/9.0.308/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
