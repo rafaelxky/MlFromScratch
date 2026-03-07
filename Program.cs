@@ -121,17 +121,23 @@ for (int epoch = 0; epoch < 500; epoch++)
 
 // final expected values
 double[] values1 = [0.87, 0.65, 0.20];
-double[] values2 = [0.12,0.12,0.12];
-double[] values3 = [0.97,0.85,0.32];
+double[] values2 = [0.20, 0.65, 0.87];
+double[] values3 = [0.12,0.12,0.12];
+double[] values4 = [0.97,0.85,0.32];
+double[] values5 = [0.32,0.85,0.97];
 
 var result1 = network.ForwardPass(values1);
 var result2 = network.ForwardPass(values2);
 var result3 = network.ForwardPass(values3);
+var result4 = network.ForwardPass(values4);
+var result5 = network.ForwardPass(values5);
 
 //network.Print();
-Console.WriteLine("Final:" + string.Join(" ", result1));
-Console.WriteLine("Final:" + string.Join(" ", result2));
-Console.WriteLine("Final:" + string.Join(" ", result3));
+Console.WriteLine("1Final:" + string.Join(" ", result1));
+Console.WriteLine("2Final:" + string.Join(" ", result2));
+Console.WriteLine("3Final:" + string.Join(" ", result3));
+Console.WriteLine("4Final:" + string.Join(" ", result4));
+Console.WriteLine("5Final:" + string.Join(" ", result5));
 //Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
 
 // save
