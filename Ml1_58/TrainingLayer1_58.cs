@@ -1,22 +1,22 @@
 using Microsoft.VisualBasic;
 
-namespace Ml1_58
+namespace TrainingMl1_58
 {
-    public class Layer1_58
+    public class TrainingLayer1_58
     {
-        public List<Neuron1_58> NeuronLayer { get; set; }
+        public List<TrainingNeuron1_58> NeuronLayer { get; set; }
         public int Length { get; set; }
         double[]? Inputs;
-        public Layer1_58()
+        public TrainingLayer1_58()
         {
 
         }
-        public Layer1_58(int numNeurons, Random random, int inputSize)
+        public TrainingLayer1_58(int numNeurons, Random random, int inputSize)
         {
             NeuronLayer = new();
             for (int i = 0; i < numNeurons; i++)
             {
-                NeuronLayer.Add(new Neuron1_58(inputSize, random));
+                NeuronLayer.Add(new TrainingNeuron1_58(inputSize, random));
             }
             Length = NeuronLayer.Count;
         }
@@ -32,13 +32,13 @@ namespace Ml1_58
             return outputs;
         }
 
-        public void BackPropagation(Layer1_58? nextLayer, double[]? targetOutputs, double learningRate)
+        public void BackPropagation(TrainingLayer1_58? nextLayer, double[]? targetOutputs, double learningRate)
         {
             if (targetOutputs != null && nextLayer == null) // Output layer
             {
                 for (int i = 0; i < Length; i++)
                 {
-                    Neuron1_58 neuron = NeuronLayer[i];
+                    TrainingNeuron1_58 neuron = NeuronLayer[i];
                     double error = neuron.CalcErrorAtOutput(neuron.Output, targetOutputs[i]);
                     neuron.RecalcWeights(error, learningRate);
                 }
@@ -47,7 +47,7 @@ namespace Ml1_58
             {
                 for (int i = 0; i < Length; i++)
                 {
-                    Neuron1_58 neuron = NeuronLayer[i];
+                    TrainingNeuron1_58 neuron = NeuronLayer[i];
 
                     // Compute sum of weighted deltas from next layer
                     double error = 0;

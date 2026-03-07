@@ -1,9 +1,9 @@
 
 using Microsoft.VisualBasic;
 
-namespace Ml1_58
+namespace TrainingMl1_58
 {
-    public class Neuron1_58
+    public class TrainingNeuron1_58
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -12,11 +12,11 @@ namespace Ml1_58
         public double Output;
         public double Delta;
 
-        public Neuron1_58()
+        public TrainingNeuron1_58()
         {
 
         }
-        public Neuron1_58(int size, Random rand)
+        public TrainingNeuron1_58(int size, Random rand)
         {
             Weights = new double[size];
             for (int i = 0; i < size; i++)

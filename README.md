@@ -25,6 +25,8 @@ You can load them with Network.NewFromJson(string path) wich will return a new N
 Currently the Ml algorithm uses sigmoid activation function so the outputs will be between 1 and 0
 The weights are initiated with random values
 
+# 
+
 
 
 
