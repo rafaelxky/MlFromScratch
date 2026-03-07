@@ -12,4 +12,5 @@ public class BasicTrainingNeuronFactory: ITrainingNeuronFactory
     {
         return new TrainingNeuron(inputSize,random);
     }
+  
 }

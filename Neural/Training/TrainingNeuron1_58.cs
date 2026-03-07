@@ -3,7 +3,7 @@ using Microsoft.VisualBasic;
 
 namespace TrainingMl1_58
 {
-    public class TrainingNeuron1_58: ITrainingNeuron
+    public class TrainingNeuron1_58: ITrainingNeuron<double[]>
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -123,6 +123,26 @@ namespace TrainingMl1_58
         {
             Console.WriteLine("Weights:" + string.Join(" ", Weights));
             Console.WriteLine("Bias:" + Bias);
+        }
+
+        public double[] GetWeights()
+        {
+            return Weights;
+        }
+
+        public double GetBias()
+        {
+            return Bias;
+        }
+
+        public object GetWeightsRaw()
+        {
+            return Weights;
+        }
+
+        public void SetWeightsRaw(object data)
+        {
+            Weights = (double[])data;
         }
     }
 }

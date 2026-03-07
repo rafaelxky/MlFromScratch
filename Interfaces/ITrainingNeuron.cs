@@ -16,3 +16,8 @@ public interface ITrainingNeuron: INeuron
     public double GetDelta();
     public double GetBias();
 }
+
+public interface ITrainingNeuron<W>: ITrainingNeuron
+{
+   
+}

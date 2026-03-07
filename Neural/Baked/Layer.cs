@@ -1,10 +1,14 @@
 public class Layer : ILayer
 {
-    public List<INeuron> NeuronLayer { get; set; }
-    public int Length { get; set; }
+    public INeuron[] NeuronLayer { get; set; }
+    public int Length => NeuronLayer.Length;
     public Layer()
     {
 
+    }
+    public Layer(INeuron[] neurons)
+    {
+        this.NeuronLayer = neurons;
     }
 
     public double[] ForwardPass(double[] inputs)
@@ -23,5 +27,10 @@ public class Layer : ILayer
         {
             neuron.Print();
         }
+    }
+
+    public INeuron[] GetNeurons()
+    {
+        return NeuronLayer;
     }
 }

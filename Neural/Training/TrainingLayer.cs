@@ -2,22 +2,26 @@ using Microsoft.VisualBasic;
 
 namespace MlNetworkTraining
 {
-    public class TrainingLayer: ITrainingLayer
+    public class TrainingLayer : ITrainingLayer
     {
-        public List<ITrainingNeuron> NeuronLayer { get; set; }
+        public ITrainingNeuron[] NeuronLayer { get; set; }
         public int Length { get; set; }
         public TrainingLayer()
         {
-            
+
+        }
+        public TrainingLayer(ITrainingNeuron[] neurons)
+        {
+            NeuronLayer = neurons;
         }
         public TrainingLayer(int numNeurons, Random random, int inputSize, ITrainingNeuronFactory neuronFactory)
         {
-            NeuronLayer = new();
+            NeuronLayer = new ITrainingNeuron[numNeurons];
             for (int i = 0; i < numNeurons; i++)
             {
-                NeuronLayer.Add(neuronFactory.NewNeuron(inputSize, random));
+                NeuronLayer[i] = neuronFactory.NewNeuron(inputSize, random);
             }
-            Length = NeuronLayer.Count;
+            Length = numNeurons;
         }
 
         public double[] ForwardPass(double[] inputs)
@@ -82,6 +86,11 @@ namespace MlNetworkTraining
         public ITrainingNeuron[] GetNeurons()
         {
             return NeuronLayer.ToArray();
+        }
+
+        INeuron[] ILayer.GetNeurons()
+        {
+            return GetNeurons();
         }
     }
 }

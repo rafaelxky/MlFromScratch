@@ -4,8 +4,8 @@ namespace MlNetworkTraining
 {
     public class TrainingNetwork
     {
-        public List<ITrainingLayer> NeuralNetwork { get; set; }
-        public int Depth { get; set; }
+        public ITrainingLayer[] NeuralNetwork { get; set; }
+        public int Depth;
 
         public TrainingNetwork()
         {
@@ -14,22 +14,23 @@ namespace MlNetworkTraining
 
         public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory)
         {
-            NeuralNetwork = new();
+            NeuralNetwork = new ITrainingLayer[hiddenLayerSizes.Length + 1];
             Random random = new();
 
             // Input -> first hidden
             int previousSize = inputSize;
 
+            int i = 0;
             foreach (var layerSize in hiddenLayerSizes)
             {
                 //new TrainingLayer(layerSize, random, previousSize)
-                NeuralNetwork.Add(layerFactory.NewLayer(layerSize,random,previousSize));
+                NeuralNetwork[i] = layerFactory.NewLayer(layerSize,random,previousSize);
                 previousSize = layerSize;
+                i++;
             }
 
             // Output layer
-            NeuralNetwork.Add(layerFactory.NewLayer(outputSize,random,previousSize));
-            Depth = NeuralNetwork.Count;
+            NeuralNetwork[i] = layerFactory.NewLayer(outputSize,random,previousSize);
         }
         public double[] ForwardPass(double[] values)
         {

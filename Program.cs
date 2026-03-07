@@ -1,4 +1,5 @@
 ﻿
+using MlNetworkTraining;
 using TrainingMl1_58;
 
 var savePath = Path.Join("1bSave.json");
@@ -14,12 +15,15 @@ Console.WriteLine("Started:");
 
 //var network = network1_58.Bake();
 //var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
-var network = 
+TrainingNetwork network = 
 new NetworkBuilder()
 .TrainingNeuron1_58()
 .BasicTrainingLayer()
 .BuildTrainingNetwork(3,[20],3);
 
+NetworkSerializer.Save(network, "newSerTest.json");
+network = NetworkSerializer.LoadTrainingNetwork("newSerTest.json");
+throw new Exception("ok");
 //network.Save(Path.Join("1bSave.json"));
 
 double[][] inputs =

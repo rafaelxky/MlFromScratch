@@ -3,7 +3,7 @@ using Microsoft.VisualBasic;
 
 namespace MlNetworkTraining
 {
-    public class TrainingNeuron: ITrainingNeuron
+    public class TrainingNeuron: ITrainingNeuron<double[]>
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -123,6 +123,26 @@ namespace MlNetworkTraining
         public double GetDelta()
         {
             return this.Delta;
+        }
+
+        public double[] GetWeights()
+        {
+            return Weights;
+        }
+
+        public double GetBias()
+        {
+            return Bias;
+        }
+
+        public object GetWeightsRaw()
+        {
+            return Weights;
+        }
+
+        public void SetWeightsRaw(object data)
+        {
+            this.Weights = (double[])data;
         }
     }
 }

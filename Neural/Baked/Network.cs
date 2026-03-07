@@ -1,36 +1,30 @@
 using System.Text.Json;
 
-    public class Network
+public class Network
+{
+    public ILayer[] NeuralNetwork { get; set; }
+    public int Depth => NeuralNetwork.Length;
+
+    public Network()
     {
-        public List<ITrainingLayer> NeuralNetwork { get; set; }
-        public int Depth { get; set; }
 
-        public Network()
-        {
-            
-        }
+    }
 
-        public double[] ForwardPass(double[] values)
+    public double[] ForwardPass(double[] values)
+    {
+        double[] last = values;
+        foreach (var layer in NeuralNetwork)
         {
-            double[] last = values;
-            foreach (var layer in NeuralNetwork)
-            {
-                last = layer.ForwardPass(last);
-            }
-            return last;
+            last = layer.ForwardPass(last);
         }
+        return last;
+    }
 
-        public void Print()
+    public void Print()
+    {
+        foreach (var layer in NeuralNetwork)
         {
-            foreach (var layer in NeuralNetwork)
-            {
-                layer.Print();
-            }
-        }
-        public static Network NewFromJson(string filePath,Type layerType,Type neuronType)
-        {
-            var jsonText = File.ReadAllText(filePath);
-            var network = JsonSerializer.Deserialize<Network>(jsonText);
-            return network!;
+            layer.Print();
         }
     }
+}
