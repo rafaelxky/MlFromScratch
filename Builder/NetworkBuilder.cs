@@ -36,6 +36,11 @@ public class NetworkBuilder
         var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuronFactory());
         return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
     }
+    public static ITrainingNetwork TrainingNetwork1_58Default(int inputSize, int[] hiddenLayerSizes, int outputSize)
+    {
+        var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuron1_58Factory());
+        return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
+    }
     
     public NetworkBuilder BasicTrainingNeuron()
     {

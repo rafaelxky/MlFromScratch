@@ -23,7 +23,6 @@ public class TrainingNeuronFactory: ITrainingNeuronFactory
             neuron.SetWeightsRaw(arr);
             neuron.Bias = neuronData.Bias;
             neurons.Add(neuron);
-            Console.WriteLine(JsonSerializer.Serialize(neuronData));
         }
         return neurons.ToArray();
     }

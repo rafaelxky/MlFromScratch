@@ -14,7 +14,6 @@ public class TrainingLayerFactory: ITrainingLayerFactory
         var layer = new List<TrainingLayer>();
         foreach (var layerData in networkData.Layers) {
             layer.Add(new TrainingLayer(_trainingNeuronFactory.ArrFromLayerData(layerData)));
-            Console.WriteLine("Layer");
         }
         return layer.ToArray();
     }

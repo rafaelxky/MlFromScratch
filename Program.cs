@@ -1,4 +1,5 @@
 ﻿
+using System.Text.Json;
 using MlNetworkTraining;
 using TrainingMl1_58;
 
@@ -15,20 +16,12 @@ Console.WriteLine("Started:");
 
 //var network = network1_58.Bake();
 //var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
-ITrainingNetwork trainingNetwork = 
-new NetworkBuilder()
-.TrainingNeuron1_58()
-.BasicTrainingLayer()
-.BuildTrainingNetwork(3,[20],3);
 
-//NetworkSerializer.Save(network, "newSerTest.json");
+//ITrainingNetwork trainingNetwork =
+//NetworkBuilder.TrainingNetwork1_58Default(3,[10,10,10],3);
+//var network = trainingNetwork;
 
-var neuFac = new Neuron1_58Factory();
-var layFac = new LayerFactory(neuFac);
-var netFac = new NetworkFactory(layFac);
-
-var network = NetworkSerializer.LoadNetwork("newSerTest.json", netFac);
-//network.Save(Path.Join("1bSave.json"));
+var network = NetworkSerializer.LoadTrainingNetworkDefault("newSerTest.json");
 
 double[][] inputs =
 [
@@ -66,6 +59,7 @@ double[][] inputs2 =
     [0.75,0.75,0.75],
     [0.25,0.25,0.25],
     [0.1, 0.5, 0.9],
+    [0.9, 0.5, 0.1],
     [0.9, 0.2, 0.1],
     [0.1, 0.2, 0.3],
     [0.9, 0.8, 0.7],
@@ -74,6 +68,11 @@ double[][] inputs2 =
     [0.87, 0.65, 0.20],
     [0.3892183, 0.9123901, 0.019139818457],
     [0.617312634, 0.45496840, 0.9091745859],
+    [0.019139818457, 0.45496840, 0.617312634],
+    [0.87, 0.65, 0.20],
+    [0.20,0.40,0.60],
+    [0.60,0.20,0.40],
+    [0.40,0.60,0.20],
 ];
 
 double[][] targets2 =
@@ -84,6 +83,7 @@ double[][] targets2 =
     [0.75,0.75,0.75],
     [0.25,0.25,0.25],
     [0.1, 0.5, 0.9],
+    [0.9, 0.5, 0.1],
     [0.9, 0.2, 0.1],
     [0.1, 0.2, 0.3],
     [0.9, 0.8, 0.7],
@@ -92,25 +92,30 @@ double[][] targets2 =
     [0.87, 0.65, 0.20],
     [0.3892183, 0.9123901, 0.019139818457],
     [0.617312634, 0.45496840, 0.9091745859],
+    [0.019139818457, 0.45496840, 0.617312634],
+    [0.87, 0.65, 0.20],
+    [0.20,0.40,0.60],
+    [0.60,0.20,0.40],
+    [0.40,0.60,0.20],
 ];
 
 
 
 
 // learning
-/*
-var learningRate = 0.01;
+
+var learningRate = 0.05;
 var lenght = inputs2.Length;
-for (int epoch = 0; epoch < 1000; epoch++)
+for (int epoch = 0; epoch < 10000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
-        Console.WriteLine("input-"+inputs2[i]+"-"+i+"-epoch-"+epoch);
         var result = network.ForwardPass(inputs2[i]);
         network.BackPropagation(targets2[i], learningRate);
+        Console.WriteLine(JsonSerializer.Serialize(result) +" - "+ JsonSerializer.Serialize(targets2[i]));
     }
 }
-*/
+
 
 
 // final expected values

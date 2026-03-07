@@ -29,7 +29,6 @@ namespace MlNetworkTraining
         }
         public double Calc(double[] values)
         {
-            Console.WriteLine(JsonSerializer.Serialize(values));
             Values = values;
             double value = 0;
             for (int i = 0; i < values.Length; i++)

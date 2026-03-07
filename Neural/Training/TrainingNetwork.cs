@@ -5,7 +5,7 @@ namespace MlNetworkTraining
     public class TrainingNetwork: ITrainingNetwork
     {
         public ITrainingLayer[] NeuralNetwork { get; set; }
-        public int Depth;
+        public int Depth => NeuralNetwork.Length;
 
         public TrainingNetwork()
         {
