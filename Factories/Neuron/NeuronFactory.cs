@@ -3,7 +3,7 @@ using MlNetworkTraining;
 
 public class NeuronFactory : INeuronFactory
 {
-    public INeuron[] ArrFromLayerData(LayerData layerData)
+    public INeuron[] ArrFromLayerData(LayerData layerData, string neuronType)
     {
         List<INeuron> neurons = new();
         foreach (var neuronData in layerData.Neurons)

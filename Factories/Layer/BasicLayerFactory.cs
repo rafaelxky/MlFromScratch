@@ -10,7 +10,7 @@ public class LayerFactory : ILayerFactory
     {
         var layer = new List<Layer>();
         foreach (var layerData in networkData.Layers) {
-            layer.Add(new Layer(_neuronFactory.ArrFromLayerData(layerData)));
+            layer.Add(new Layer(_neuronFactory.ArrFromLayerData(layerData, networkData.NeuronType)));
         }
         return layer.ToArray();
     }

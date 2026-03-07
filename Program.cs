@@ -15,19 +15,19 @@ Console.WriteLine("Started:");
 
 //var network = network1_58.Bake();
 //var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
-ITrainingNetwork network = 
+ITrainingNetwork trainingNetwork = 
 new NetworkBuilder()
 .TrainingNeuron1_58()
 .BasicTrainingLayer()
 .BuildTrainingNetwork(3,[20],3);
 
-NetworkSerializer.Save(network, "newSerTest.json");
+//NetworkSerializer.Save(network, "newSerTest.json");
 
-var neuFac = new TrainingNeuron1_58Factory();
-var layFac = new TrainingLayerFactory(neuFac);
-var netFac = new TrainingNetworkFactory(layFac);
+var neuFac = new Neuron1_58Factory();
+var layFac = new LayerFactory(neuFac);
+var netFac = new NetworkFactory(layFac);
 
-network = NetworkSerializer.LoadNetwork("newSerTest.json", netFac);
+var network = NetworkSerializer.LoadNetwork("newSerTest.json", netFac);
 //network.Save(Path.Join("1bSave.json"));
 
 double[][] inputs =
@@ -98,7 +98,7 @@ double[][] targets2 =
 
 
 // learning
-
+/*
 var learningRate = 0.01;
 var lenght = inputs2.Length;
 for (int epoch = 0; epoch < 1000; epoch++)
@@ -110,6 +110,7 @@ for (int epoch = 0; epoch < 1000; epoch++)
         network.BackPropagation(targets2[i], learningRate);
     }
 }
+*/
 
 
 // final expected values

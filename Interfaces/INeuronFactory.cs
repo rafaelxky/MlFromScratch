@@ -1,4 +1,4 @@
 public interface INeuronFactory
 {
-    public INeuron[] ArrFromLayerData(LayerData layerData);
+    public INeuron[] ArrFromLayerData(LayerData layerData,string neuronType);
 }
