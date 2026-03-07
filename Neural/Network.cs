@@ -36,7 +36,6 @@ namespace MlNetwork
             {
                 last = layer.ForwardPass(last);
             }
-            Console.WriteLine(string.Join(", ", last));
             return last;
         }
 

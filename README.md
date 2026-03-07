@@ -25,7 +25,22 @@ You can load them with Network.NewFromJson(string path) wich will return a new N
 Currently the Ml algorithm uses sigmoid activation function so the outputs will be between 1 and 0
 The weights are initiated with random values
 
-# 
+# Notes
+A:
+instantiated as...
+var network = TrainingNetwork1_58.NewFromJson(Path.Join("NetworkSave.json"));
+- 3.5 mb, 439,000 parameters (calculated)
+epochs = 1000
+learningRate = 0.01
+roughly 10 or 12 cycles per second
+- saved file: 15mb
+
+B:
+instantiated as...
+var network = network1_58.Bake();
+from example A:
+- 107KB, 439,000 parameters (calculated)
+- saved file: 310kb
 
 
 

@@ -6,13 +6,14 @@ Console.WriteLine("Started:");
 //var network = new Network(3,[20],3);
 //var network = Network.NewFromJson(Path.Join("NetworkSave.json"));
 
-//var network = new Network1_58(3,[20],3);
-//var network1_58 = TrainingNetwork1_58.NewFromJson(Path.Join("NetworkSave.json"));
-//var network = network1_58.Bake();
+//var network = new TrainingNetwork1_58(3,[20],3);
+//var network = new TrainingNetwork1_58(3, [250, 250, 250, 250, 250, 250, 250, 250], 3);
+var network1_58 = TrainingNetwork1_58.NewFromJson(Path.Join("NetworkSave.json"));
+var network = network1_58.Bake();
 
-var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
+//var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
 
-//network.Save(Path.Join("1bSave.json"));
+network.Save(Path.Join("1bSave.json"));
 
 double[][] inputs =
 [
@@ -78,6 +79,7 @@ double[][] targets2 =
     [0.617312634, 0.45496840, 0.9091745859],
 ];
 
+// final expected values
 double[] values1 = [0.87, 0.65, 0.20];
 double[] values2 = [0.12,0.12,0.12];
 double[] values3 = [0.97,0.85,0.32];
@@ -87,10 +89,11 @@ double[] values3 = [0.97,0.85,0.32];
 /*
 var learningRate = 0.01;
 var lenght = inputs2.Length;
-for (int epoch = 0; epoch < 30000; epoch++)
+for (int epoch = 0; epoch < 1000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
+        Console.WriteLine("input-"+inputs2[i]+"-"+i+"-epoch-"+epoch);
         var result = network.ForwardPass(inputs2[i]);
         network.BackPropagation(targets2[i], learningRate);
     }
@@ -107,4 +110,5 @@ Console.WriteLine("Final:" + string.Join(" ", result2));
 Console.WriteLine("Final:" + string.Join(" ", result3));
 //Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
 
+// save
 //network.Save(Path.Join("NetworkSave.json"));

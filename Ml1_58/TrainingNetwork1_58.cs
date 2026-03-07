@@ -36,7 +36,6 @@ namespace TrainingMl1_58
             {
                 last = layer.ForwardPass(last);
             }
-            Console.WriteLine(string.Join(", ", last));
             return last;
         }
 
