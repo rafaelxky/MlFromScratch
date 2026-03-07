@@ -1,6 +1,5 @@
 ﻿
 using TrainingMl1_58;
-using MlNetwork;
 
 var savePath = Path.Join("1bSave.json");
 
@@ -14,7 +13,12 @@ Console.WriteLine("Started:");
 //var network = TrainingNetwork1_58.NewFromJson(Path.Join("NetworkSave.json"));
 
 //var network = network1_58.Bake();
-var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
+//var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
+var network = 
+new NetworkBuilder()
+.TrainingNeuron1_58()
+.BasicTrainingLayer()
+.BuildTrainingNetwork(3,[20],3);
 
 //network.Save(Path.Join("1bSave.json"));
 

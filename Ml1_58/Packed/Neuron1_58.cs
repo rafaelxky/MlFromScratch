@@ -4,7 +4,7 @@ using Microsoft.VisualBasic;
 
 namespace TrainingMl1_58
 {
-    public class Neuron1_58
+    public class Neuron1_58: INeuron
     {
         public byte[] Weights { get; set; }
         public double[] Values;
@@ -34,17 +34,16 @@ namespace TrainingMl1_58
             Output = SigmoidActivation(value);
             return Output;
         }
-        public void SetWeights(byte[] weights)
-        {
-            Weights = weights;
-        }
-        public void SetBias(double bias)
-        {
-            Bias = bias;
-        }
+      
         public double SigmoidActivation(double value)
         {
             return 1.0 / (1.0 + Math.Exp(-value));
+        }
+
+        public void Print()
+        {
+            Console.WriteLine("Weights:" + string.Join(" ", Weights));
+            Console.WriteLine("Bias:" + Bias);
         }
     }
 }

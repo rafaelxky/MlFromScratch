@@ -1,29 +1,27 @@
 using Microsoft.VisualBasic;
 
-namespace MlNetwork
+namespace MlNetworkTraining
 {
-    public class Layer
+    public class TrainingLayer: ITrainingLayer
     {
-        public List<Neuron> NeuronLayer { get; set; }
+        public List<ITrainingNeuron> NeuronLayer { get; set; }
         public int Length { get; set; }
-        double[]? Inputs;
-        public Layer()
+        public TrainingLayer()
         {
-
+            
         }
-        public Layer(int numNeurons, Random random, int inputSize)
+        public TrainingLayer(int numNeurons, Random random, int inputSize, ITrainingNeuronFactory neuronFactory)
         {
             NeuronLayer = new();
             for (int i = 0; i < numNeurons; i++)
             {
-                NeuronLayer.Add(new Neuron(inputSize, random));
+                NeuronLayer.Add(neuronFactory.NewNeuron(inputSize, random));
             }
             Length = NeuronLayer.Count;
         }
 
         public double[] ForwardPass(double[] inputs)
         {
-            Inputs = inputs;
             double[] outputs = new double[Length];
             for (int i = 0; i < Length; i++)
             {
@@ -32,14 +30,14 @@ namespace MlNetwork
             return outputs;
         }
 
-        public void BackPropagation(Layer? nextLayer, double[]? targetOutputs, double learningRate)
+        public void BackPropagation(ITrainingLayer? nextLayer, double[]? targetOutputs, double learningRate)
         {
             if (targetOutputs != null && nextLayer == null) // Output layer
             {
                 for (int i = 0; i < Length; i++)
                 {
-                    Neuron neuron = NeuronLayer[i];
-                    double error = neuron.CalcErrorAtOutput(neuron.Output, targetOutputs[i]);
+                    var neuron = NeuronLayer[i];
+                    double error = neuron.CalcErrorAtOutput(neuron.GetOutput(), targetOutputs[i]);
                     neuron.RecalcWeights(error, learningRate);
                 }
             }
@@ -47,13 +45,14 @@ namespace MlNetwork
             {
                 for (int i = 0; i < Length; i++)
                 {
-                    Neuron neuron = NeuronLayer[i];
+                    var neuron = NeuronLayer[i];
 
                     // Compute sum of weighted deltas from next layer
+                    // switch to neuron instead
                     double error = 0;
-                    for (int k = 0; k < nextLayer.Length; k++)
+                    for (int k = 0; k < nextLayer!.GetLength(); k++)
                     {
-                        error += nextLayer.NeuronLayer[k].Weights[i] * nextLayer.NeuronLayer[k].Delta;
+                        error += nextLayer.GetNeuron(k).GetWeight(i) * nextLayer.GetNeuron(k).GetDelta();
                     }
 
                     // Update neuron weights and bias
@@ -66,9 +65,23 @@ namespace MlNetwork
         {
             foreach (var neuron in NeuronLayer)
             {
-                Console.WriteLine("Weights:" + string.Join(" ", neuron.Weights));
-                Console.WriteLine("Bias:" + neuron.Bias);
+                neuron.Print();
             }
+        }
+
+        public int GetLength()
+        {
+            return this.Length;
+        }
+
+        public ITrainingNeuron GetNeuron(int id)
+        {
+            return this.NeuronLayer[id];
+        }
+
+        public ITrainingNeuron[] GetNeurons()
+        {
+            return NeuronLayer.ToArray();
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.VisualBasic;
 
 namespace TrainingMl1_58
 {
-    public class TrainingNeuron1_58
+    public class TrainingNeuron1_58: ITrainingNeuron
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -14,7 +14,7 @@ namespace TrainingMl1_58
 
         public TrainingNeuron1_58()
         {
-
+            
         }
         public TrainingNeuron1_58(int size, Random rand)
         {
@@ -102,6 +102,27 @@ namespace TrainingMl1_58
 
             // Update bias
             Bias -= learningRate * Delta;
+        }
+
+        public double GetOutput()
+        {
+            return Output;
+        }
+
+        public double GetWeight(int id)
+        {
+            return Weights[id];
+        }
+
+        public double GetDelta()
+        {
+            return Delta;
+        }
+
+        public void Print()
+        {
+            Console.WriteLine("Weights:" + string.Join(" ", Weights));
+            Console.WriteLine("Bias:" + Bias);
         }
     }
 }

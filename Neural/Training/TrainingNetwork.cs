@@ -1,17 +1,18 @@
 using System.Text.Json;
 
-namespace TrainingMl1_58
+namespace MlNetworkTraining
 {
-    public class TrainingNetwork1_58
+    public class TrainingNetwork
     {
-        public List<TrainingLayer1_58> NeuralNetwork { get; set; }
+        public List<ITrainingLayer> NeuralNetwork { get; set; }
         public int Depth { get; set; }
 
-        public TrainingNetwork1_58()
+        public TrainingNetwork()
         {
 
         }
-        public TrainingNetwork1_58(int inputSize, int[] hiddenLayerSizes, int outputSize)
+
+        public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory)
         {
             NeuralNetwork = new();
             Random random = new();
@@ -21,12 +22,13 @@ namespace TrainingMl1_58
 
             foreach (var layerSize in hiddenLayerSizes)
             {
-                NeuralNetwork.Add(new TrainingLayer1_58(layerSize, random, previousSize));
+                //new TrainingLayer(layerSize, random, previousSize)
+                NeuralNetwork.Add(layerFactory.NewLayer(layerSize,random,previousSize));
                 previousSize = layerSize;
             }
 
             // Output layer
-            NeuralNetwork.Add(new TrainingLayer1_58(outputSize, random, previousSize));
+            NeuralNetwork.Add(layerFactory.NewLayer(outputSize,random,previousSize));
             Depth = NeuralNetwork.Count;
         }
         public double[] ForwardPass(double[] values)
@@ -43,8 +45,8 @@ namespace TrainingMl1_58
         {
             for (int i = Depth - 1; i >= 0; i--) // start from output layer
             {
-                TrainingLayer1_58 layer = NeuralNetwork[i];
-                TrainingLayer1_58? nextLayer = (i < Depth - 1) ? NeuralNetwork[i + 1] : null;
+                ITrainingLayer layer = NeuralNetwork[i];
+                ITrainingLayer? nextLayer = (i < Depth - 1) ? NeuralNetwork[i + 1] : null;
 
                 // Pass expected only to the output layer
                 double[]? targets = (i == Depth - 1) ? expected : null;
@@ -70,25 +72,20 @@ namespace TrainingMl1_58
             var json = JsonSerializer.Serialize(this, opts);
             File.WriteAllText(filePath, json);
         }
-        public static TrainingNetwork1_58 NewFromJson(string filePath)
+        public static TrainingNetwork NewFromJson(string filePath)
         {
             var jsonText = File.ReadAllText(filePath);
-            var network = JsonSerializer.Deserialize<TrainingNetwork1_58>(jsonText);
+            var network = JsonSerializer.Deserialize<TrainingNetwork>(jsonText);
             return network!;
         }
-        public static TrainingNetwork1_58 NewFromJsonOrDefault(string filePath, TrainingNetwork1_58 network)
+        public static TrainingNetwork NewFromJsonOrDefault(string filePath, TrainingNetwork network)
         {
             if (File.Exists(filePath))
             {
                 var jsonText = File.ReadAllText(filePath);
-                return JsonSerializer.Deserialize<TrainingNetwork1_58>(jsonText)!;
+                return JsonSerializer.Deserialize<TrainingNetwork>(jsonText)!;
             }
             return network;
-        }
-
-        public Network1_58 Bake()
-        {
-            return new Network1_58(this);   
         }
     }
 }

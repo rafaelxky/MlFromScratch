@@ -1,9 +1,9 @@
 
 using Microsoft.VisualBasic;
 
-namespace MlNetwork
+namespace MlNetworkTraining
 {
-    public class Neuron
+    public class TrainingNeuron: ITrainingNeuron
     {
         public double[] Weights { get; set; }
         public double[] Values;
@@ -12,11 +12,11 @@ namespace MlNetwork
         public double Output;
         public double Delta;
 
-        public Neuron()
+        public TrainingNeuron()
         {
             
         }
-        public Neuron(int size, Random rand)
+        public TrainingNeuron(int size, Random rand)
         {
             Weights = new double[size];
             for (int i = 0; i < size; i++)
@@ -102,6 +102,27 @@ namespace MlNetwork
 
             // Update bias
             Bias -= learningRate * Delta;
+        }
+
+        public void Print()
+        {
+            Console.WriteLine("Weights:" + string.Join(" ", Weights));
+            Console.WriteLine("Bias:" + Bias);
+        }
+
+        public double GetOutput()
+        {
+            return this.Output;
+        }
+
+        public double GetWeight(int id)
+        {
+            return this.Weights[id];
+        }
+
+        public double GetDelta()
+        {
+            return this.Delta;
         }
     }
 }
