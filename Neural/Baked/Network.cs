@@ -4,10 +4,11 @@ public class Network: INetwork
 {
     public ILayer[] NeuralNetwork { get; set; }
     public int Depth => NeuralNetwork.Length;
+    public IActivationFunction ActivationFunction {get;set;}
 
     public Network()
     {
-
+        ActivationFunction = new SigmoidActivation();
     }
 
     public double[] ForwardPass(double[] values)
@@ -15,7 +16,7 @@ public class Network: INetwork
         double[] last = values;
         foreach (var layer in NeuralNetwork)
         {
-            last = layer.ForwardPass(last);
+            last = layer.ForwardPass(last, ActivationFunction);
         }
         return last;
     }

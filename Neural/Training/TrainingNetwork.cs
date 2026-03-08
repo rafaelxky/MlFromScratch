@@ -6,10 +6,11 @@ namespace MlNetworkTraining
     {
         public ITrainingLayer[] NeuralNetwork { get; set; }
         public int Depth => NeuralNetwork.Length;
+        public IActivationFunction ActivationFunction;
 
         public TrainingNetwork()
         {
-
+            ActivationFunction = new SigmoidActivation();
         }
 
         public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory)
@@ -37,7 +38,7 @@ namespace MlNetworkTraining
             double[] last = values;
             foreach (var layer in NeuralNetwork)
             {
-                last = layer.ForwardPass(last);
+                last = layer.ForwardPass(last, ActivationFunction);
             }
             return last;
         }

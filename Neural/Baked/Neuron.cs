@@ -9,7 +9,7 @@ namespace MlNetworkTraining
         {
             
         }
-        public double Calc(double[] values)
+        public double Calc(double[] values, IActivationFunction activationFunction)
         {
             double value = 0;
             for (int i = 0; i < values.Length; i++)
@@ -17,16 +17,12 @@ namespace MlNetworkTraining
                 value += values[i] * Weights[i];
             }
             value += Bias;
-            var output = SigmoidActivation(value);
+            var output = activationFunction.Apply(value);
             return output;
         }        
         public void SetBias(double bias)
         {
             Bias = bias;
-        }
-        public double SigmoidActivation(double value)
-        {
-            return 1.0 / (1.0 + Math.Exp(-value));
         }
         public void Print()
         {

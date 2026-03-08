@@ -23,12 +23,12 @@ namespace MlNetworkTraining
             }
         }
 
-        public double[] ForwardPass(double[] inputs)
+        public double[] ForwardPass(double[] inputs, IActivationFunction activationFunction)
         {
             double[] outputs = new double[Length];
             for (int i = 0; i < Length; i++)
             {
-                outputs[i] = NeuronLayer[i].Calc(inputs);
+                outputs[i] = NeuronLayer[i].Calc(inputs, activationFunction);
             }
             return outputs;
         }

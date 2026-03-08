@@ -26,7 +26,7 @@ namespace TrainingMl1_58
             }
             Bias = rand.NextDouble() - 0.5;
         }
-        public double Calc(double[] values)
+        public double Calc(double[] values, IActivationFunction activationFunction)
         {
             Values = values;
             double value = 0;
@@ -36,7 +36,7 @@ namespace TrainingMl1_58
             }
             value += Bias;
             Z = value;
-            Output = SigmoidActivation(value);
+            Output = activationFunction.Apply(value);
             return Output;
         }
         public double MeanSquareError(double finalOutput, double targetOutput)

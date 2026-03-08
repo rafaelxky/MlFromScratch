@@ -26,11 +26,11 @@ namespace TrainingMl1_58
             }
             Weights = BitUtils.PackArray(bitmap.ToArray());
         }
-        public double Calc(double[] values)
+        public double Calc(double[] values, IActivationFunction activationFunction)
         {
             var value = BitUtils.PackedDotProduct(Weights, values, values.Length);
             value += Bias;
-            var output = SigmoidActivation(value);
+            var output = activationFunction.Apply(value);
             return output;
         }
 
@@ -43,11 +43,6 @@ namespace TrainingMl1_58
             }
             Weights = BitUtils.PackArray(bitmap.ToArray());
             Bias = neuron.Bias;
-        }
-
-        public double SigmoidActivation(double value)
-        {
-            return 1.0 / (1.0 + Math.Exp(-value));
         }
 
         public void Print()
