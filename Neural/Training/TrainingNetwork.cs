@@ -13,8 +13,9 @@ namespace MlNetworkTraining
             ActivationFunction = new SigmoidActivation();
         }
 
-        public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory)
+        public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory, IActivationFunction  activationFunction)
         {
+            ActivationFunction = activationFunction;
             NeuralNetwork = new ITrainingLayer[hiddenLayerSizes.Length + 1];
             Random random = new();
 
@@ -53,7 +54,7 @@ namespace MlNetworkTraining
                 // Pass expected only to the output layer
                 double[]? targets = (i == Depth - 1) ? expected : null;
 
-                layer.BackPropagation(nextLayer, targets, learningRate);
+                layer.BackPropagation(nextLayer, targets, learningRate, ActivationFunction);
             }
         }
 

@@ -8,7 +8,7 @@ namespace MlNetworkTraining
         public int Length => NeuronLayer.Length;
         public TrainingLayer()
         {
-
+            
         }
         public TrainingLayer(ITrainingNeuron[] neurons)
         {
@@ -33,7 +33,7 @@ namespace MlNetworkTraining
             return outputs;
         }
 
-        public void BackPropagation(ITrainingLayer? nextLayer, double[]? targetOutputs, double learningRate)
+        public void BackPropagation(ITrainingLayer? nextLayer, double[]? targetOutputs, double learningRate, IActivationFunction activationFunction)
         {
             if (targetOutputs != null && nextLayer == null) // Output layer
             {
@@ -41,7 +41,7 @@ namespace MlNetworkTraining
                 {
                     var neuron = NeuronLayer[i];
                     double error = neuron.CalcErrorAtOutput(neuron.GetOutput(), targetOutputs[i]);
-                    neuron.RecalcWeights(error, learningRate);
+                    neuron.RecalcWeights(error, learningRate, activationFunction);
                 }
             }
             else // Hidden layer
@@ -59,7 +59,7 @@ namespace MlNetworkTraining
                     }
 
                     // Update neuron weights and bias
-                    neuron.RecalcWeights(error, learningRate);
+                    neuron.RecalcWeights(error, learningRate, activationFunction);
                 }
             }
         }

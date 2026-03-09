@@ -14,7 +14,8 @@ public static class NetworkSerializer
                 )).ToArray()
             )).ToArray(),
             NeuronType: network.GetLayers()[0].GetNeurons()[0].GetType().FullName!,
-            LayerType: network.GetLayers()[0].GetType().FullName!
+            LayerType: network.GetLayers()[0].GetType().FullName!,
+            NetworkType: network.GetType().FullName!
         );
         File.WriteAllText(path, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
     }
@@ -29,40 +30,40 @@ public static class NetworkSerializer
         var data = JsonSerializer.Deserialize<NetworkData>(File.ReadAllText(path))!;
         return networkFactory.FromDto(data);
     }
-    public static INetwork LoadNetworkDefault(string path)
+    public static INetwork LoadNetworkDefault(string path, IActivationFunction activationFunction)
     {
         var neuFac = new NeuronFactory();
         var layFac = new LayerFactory(neuFac);
-        var netFac = new NetworkFactory(layFac);
+        var netFac = new NetworkFactory(layFac, activationFunction);
         var data = JsonSerializer.Deserialize<NetworkData>(File.ReadAllText(path))!;
         return netFac.FromDto(data);
     }
-    public static ITrainingNetwork LoadTrainingNetworkDefault(string path)
+    public static ITrainingNetwork LoadTrainingNetworkDefault(string path, IActivationFunction activationFunction)
     {
         var neuFac = new TrainingNeuronFactory();
         var layFac = new TrainingLayerFactory(neuFac);
-        var netFac = new TrainingNetworkFactory(layFac);
+        var netFac = new TrainingNetworkFactory(layFac, activationFunction);
         var data = JsonSerializer.Deserialize<NetworkData>(File.ReadAllText(path))!;
         return netFac.FromDto(data);
     }
-    public static ITrainingNetwork Load1_58TrainingDefault(string path)
+    public static ITrainingNetwork Load1_58TrainingDefault(string path, IActivationFunction activationFunction)
     {
         var neuFac = new TrainingNeuron1_58Factory();
         var layFac = new TrainingLayerFactory(neuFac);
-        var netFac = new TrainingNetworkFactory(layFac);
+        var netFac = new TrainingNetworkFactory(layFac, activationFunction);
         var data = JsonSerializer.Deserialize<NetworkData>(File.ReadAllText(path))!;
         return netFac.FromDto(data);
     }
-    public static INetwork Load1_58Default(string path)
+    public static INetwork Load1_58Default(string path, IActivationFunction activationFunction)
     {
         var neuFac = new Neuron1_58Factory();
         var layFac = new LayerFactory(neuFac);
-        var netFac = new NetworkFactory(layFac);
+        var netFac = new NetworkFactory(layFac, activationFunction);
         var data = JsonSerializer.Deserialize<NetworkData>(File.ReadAllText(path))!;
         return netFac.FromDto(data);
     }
 
-    public static INetwork Bake1_58Network(INetwork network)
+    public static INetwork Bake1_58Network(INetwork network, IActivationFunction activationFunction)
     {
         var data = new NetworkData(
            Layers: network.GetLayers().Select(layer => new LayerData(
@@ -72,11 +73,12 @@ public static class NetworkSerializer
                )).ToArray()
            )).ToArray(),
            NeuronType: network.GetLayers()[0].GetNeurons()[0].GetType().FullName!,
-           LayerType: network.GetLayers()[0].GetType().FullName!
+           LayerType: network.GetLayers()[0].GetType().FullName!,
+           NetworkType: network.GetType().FullName!
        );
         var neuFac = new Neuron1_58Factory();
         var layFac = new LayerFactory(neuFac);
-        var netFac = new NetworkFactory(layFac);
+        var netFac = new NetworkFactory(layFac, activationFunction);
         return netFac.FromDto(data);
     }
 }

@@ -11,7 +11,38 @@ public class NetworkBuilder
     private int _inputSize = 3; 
     private int[] _hiddenLayerSizes = [10,10,10];
     private int _outputSize = 3;
+    private IActivationFunction _activationFunction;
 
+    public NetworkBuilder Sigmoid()
+    {
+        _activationFunction = new SigmoidActivation();
+        return this;
+    }
+    public NetworkBuilder Linear()
+    {
+        _activationFunction = new LinearActivation();
+        return this;
+    }
+    public NetworkBuilder ReLU()
+    {
+        _activationFunction = new ReLUActivation();
+        return this;
+    }
+    public NetworkBuilder Tanh()
+    {
+        _activationFunction = new TanhActivation();
+        return this;
+    }
+    public NetworkBuilder SoftPlus()
+    {
+        _activationFunction = new SoftplusActivation();
+        return this;
+    }
+    public NetworkBuilder SetActivationFunction(IActivationFunction activationFunction)
+    {
+        _activationFunction = activationFunction;
+        return this;
+    }
     public ITrainingNetwork BuildTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
     {
         _inputSize = inputSize;
@@ -29,17 +60,17 @@ public class NetworkBuilder
         {
             throw new Exception("Called BuildTrainingNetwork() but TrainingNeuronFactory not set!");
         }
-        return new TrainingNetwork(_inputSize, _hiddenLayerSizes,_outputSize, _trainingLayerFactory);
+        return new TrainingNetwork(_inputSize, _hiddenLayerSizes,_outputSize, _trainingLayerFactory, _activationFunction);
     }
-    public static ITrainingNetwork DefaultTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize)
+    public static ITrainingNetwork DefaultTrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, IActivationFunction activationFunction)
     {
         var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuronFactory());
-        return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
+        return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory, activationFunction);
     }
-    public static ITrainingNetwork TrainingNetwork1_58Default(int inputSize, int[] hiddenLayerSizes, int outputSize)
+    public static ITrainingNetwork TrainingNetwork1_58Default(int inputSize, int[] hiddenLayerSizes, int outputSize, IActivationFunction activationFunction)
     {
         var basicLayerFactory = new TrainingLayerFactory(new TrainingNeuron1_58Factory());
-        return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory);
+        return new TrainingNetwork(inputSize, hiddenLayerSizes,outputSize, basicLayerFactory, activationFunction);
     }
     
     public NetworkBuilder BasicTrainingNeuron()

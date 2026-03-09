@@ -53,12 +53,12 @@ namespace TrainingMl1_58
             // next weights corresponds to the weight of the output on the next neuron
             return nextWeight * nextDelta;
         }
-        public double CalcGradient(double z, double inputValue, double error)
+        public double CalcGradient(double z, double inputValue, double error, IActivationFunction activationFunction)
         {
             // finalOutput is the neuron output after activation function
             // target output is the final target output at the last neuron
             // z is the preactivation scalar
-            var s = error * SigmoidDerivative(z);
+            var s = error * activationFunction.Derivative(z);
             Delta = s;
             return s * inputValue;
         }
@@ -79,20 +79,11 @@ namespace TrainingMl1_58
         {
             Bias = bias;
         }
-        public double SigmoidActivation(double value)
-        {
-            return 1.0 / (1.0 + Math.Exp(-value));
-        }
-        public double SigmoidDerivative(double value)
-        {
-            var result = SigmoidActivation(value);
-            return result * (1 - result);
-        }
 
-        public void RecalcWeights(double error, double learningRate)
+        public void RecalcWeights(double error, double learningRate, IActivationFunction activationFunction)
         {
             // Compute delta
-            Delta = error * SigmoidDerivative(Z);
+            Delta = error * activationFunction.Derivative(Z);
 
             // Update weights
             for (int i = 0; i < Values.Length; i++)
