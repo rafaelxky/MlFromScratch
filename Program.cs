@@ -6,17 +6,6 @@ using TrainingMl1_58;
 var savePath = Path.Join("1bSave.json");
 
 Console.WriteLine("Started:");
-//var network = new Network(3,[20],3);
-//var network = new Network(3, [250, 250, 250, 250, 250, 250, 250, 250], 3);
-//var network = Network.NewFromJson(Path.Join("DoubleNetworkSave.json"));
-
-//var network = new TrainingNetwork1_58(3,[20],3);
-//var network = new TrainingNetwork1_58(3, [250, 250, 250, 250, 250, 250, 250, 250], 3);
-//var network = TrainingNetwork1_58.NewFromJson(Path.Join("NetworkSave.json"));
-
-//var network = network1_58.Bake();
-//var network = Network1_58.NewFromJson(Path.Join("1bSave.json"));
-
 //ITrainingNetwork trainingNetwork = NetworkBuilder.DefaultTrainingNetwork(3, [16,16], 3, new ReLUActivation());
 //var network = trainingNetwork;
 var network = NetworkSerializer.LoadTrainingNetworkDefault("newSerTest.json", new SwishActivation());

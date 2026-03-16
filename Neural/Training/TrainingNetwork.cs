@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace MlNetworkTraining
 {
-    public class TrainingNetwork: ITrainingNetwork
+    public class TrainingNetwork : ITrainingNetwork
     {
         public ITrainingLayer[] NeuralNetwork { get; set; }
         public int Depth => NeuralNetwork.Length;
@@ -13,7 +13,7 @@ namespace MlNetworkTraining
             ActivationFunction = new SigmoidActivation();
         }
 
-        public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory, IActivationFunction  activationFunction)
+        public TrainingNetwork(int inputSize, int[] hiddenLayerSizes, int outputSize, ITrainingLayerFactory layerFactory, IActivationFunction activationFunction)
         {
             ActivationFunction = activationFunction;
             NeuralNetwork = new ITrainingLayer[hiddenLayerSizes.Length + 1];
@@ -26,16 +26,20 @@ namespace MlNetworkTraining
             foreach (var layerSize in hiddenLayerSizes)
             {
                 //new TrainingLayer(layerSize, random, previousSize)
-                NeuralNetwork[i] = layerFactory.NewLayer(layerSize,random,previousSize);
+                NeuralNetwork[i] = layerFactory.NewLayer(layerSize, random, previousSize);
                 previousSize = layerSize;
                 i++;
             }
 
             // Output layer
-            NeuralNetwork[i] = layerFactory.NewLayer(outputSize,random,previousSize);
+            NeuralNetwork[i] = layerFactory.NewLayer(outputSize, random, previousSize);
         }
         public double[] ForwardPass(double[] values)
         {
+            if (values.Length != NeuralNetwork[0].GetLength())
+            {
+                throw new WrongInputSizeException($"Forward pass input must have lenght {NeuralNetwork[0].GetLength()} for this network!");
+            }
             double[] last = values;
             foreach (var layer in NeuralNetwork)
             {
@@ -46,6 +50,10 @@ namespace MlNetworkTraining
 
         public void BackPropagation(double[] expected, double learningRate)
         {
+            if (expected.Length != NeuralNetwork[0].GetLength())
+            {
+                throw new WrongInputSizeException($"Back propagation input must have lenght {NeuralNetwork[0].GetLength()} for this network!");
+            }
             for (int i = Depth - 1; i >= 0; i--) // start from output layer
             {
                 ITrainingLayer layer = NeuralNetwork[i];
