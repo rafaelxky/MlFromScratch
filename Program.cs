@@ -1,0 +1,141 @@
+﻿
+using System.Text.Json;
+
+//ITrainingNetwork trainingNetwork = NetworkBuilder.DefaultTrainingNetwork(3, [16,16], 3, new ReLUActivation());
+//var network = trainingNetwork;
+//var network = NetworkSerializer.LoadTrainingNetworkDefault("newSerTest.json", new SwishActivation());
+
+var af = new SigmoidActivation();
+//var network = new Network(3,3,af);
+//network.AddNewLayer(3,af);
+//network.AddNewLayer(3,af);
+
+var savePath = Path.Join("v2save.json");
+//var network = Network.Load(savePath);
+var network = new Network(3,3,af);
+network.Config.UseGpu = false;
+var trainer = new MlNetworkTrainer(network);
+network.AddNewLayer(1000,af);
+network.AddNewLayer(1000,af);
+network.AddNewLayer(1000,af);
+network.AddNewLayer(1000,af);
+network.AddNewLayer(3,af);
+
+// todo: implement gpu in backprop
+
+double[][] inputs =
+[
+    [1.0, 0.5, 0.1],
+    [0.1, 1.0, 1.0],
+    [0.5, 0.5, 0.5],
+    [0.9, 0.1, 0.2],
+    [0.2, 0.8, 0.3],
+    [0.3, 0.2, 0.9],
+    [0.7, 0.6, 0.1],
+    [0.4, 0.9, 0.4],
+    [0.1, 0.3, 0.8],
+    [0.6, 0.4, 0.6],
+];
+double[][] targets =
+[
+    [1.0, 1.0, 1.0],
+    [0.1, 0.5, 0.1],
+    [0.5, 0.5, 0.5],
+    [0.9, 0.1, 0.2],
+    [0.2, 0.8, 0.3],
+    [0.3, 0.2, 0.9],
+    [0.7, 0.6, 0.1],
+    [0.4, 0.9, 0.4],
+    [0.1, 0.3, 0.8],
+    [0.6, 0.4, 0.6],
+];
+
+// linear relation
+double[][] inputs2 =
+[
+    [0.9,0.9,0.9],
+    [0.01,0.01,0.01],
+    [0.5,0.5,0.5],
+    [0.75,0.75,0.75],
+    [0.25,0.25,0.25],
+    [0.1, 0.5, 0.9],
+    [0.9, 0.5, 0.1],
+    [0.9, 0.2, 0.1],
+    [0.1, 0.2, 0.3],
+    [0.9, 0.8, 0.7],
+    [0.3, 0.2, 0.1],
+    [0.7, 0.8, 0.9],
+    [0.87, 0.65, 0.20],
+    [0.3892183, 0.9123901, 0.019139818457],
+    [0.617312634, 0.45496840, 0.9091745859],
+    [0.019139818457, 0.45496840, 0.617312634],
+    [0.87, 0.65, 0.20],
+    [0.20,0.40,0.60],
+    [0.60,0.20,0.40],
+    [0.40,0.60,0.20],
+];
+
+double[][] targets2 =
+[
+    [0.9,0.9,0.9],
+    [0.01,0.01,0.01],
+    [0.5,0.5,0.5],
+    [0.75,0.75,0.75],
+    [0.25,0.25,0.25],
+    [0.1, 0.5, 0.9],
+    [0.9, 0.5, 0.1],
+    [0.9, 0.2, 0.1],
+    [0.1, 0.2, 0.3],
+    [0.9, 0.8, 0.7],
+    [0.3, 0.2, 0.1],
+    [0.7, 0.8, 0.9],
+    [0.87, 0.65, 0.20],
+    [0.3892183, 0.9123901, 0.019139818457],
+    [0.617312634, 0.45496840, 0.9091745859],
+    [0.019139818457, 0.45496840, 0.617312634],
+    [0.87, 0.65, 0.20],
+    [0.20,0.40,0.60],
+    [0.60,0.20,0.40],
+    [0.40,0.60,0.20],
+];
+
+
+// learning
+var learningRate = 0.001;
+for (int epoch = 0; epoch < 2000; epoch++)
+{
+    for (int i = 0; i < inputs2.Length; i++)
+    {
+        var result = trainer.ForwardTrain(inputs2[i]);
+        trainer.Train(targets2[i], learningRate);
+        Console.WriteLine(JsonSerializer.Serialize(result) +" - "+ JsonSerializer.Serialize(targets2[i]));
+    }
+    Console.WriteLine("Epoch: " + epoch);
+}
+
+// final expected values
+double[] values1 = [0.87, 0.65, 0.20];
+double[] values2 = [0.20, 0.65, 0.87];
+double[] values3 = [0.12,0.12,0.12];
+double[] values4 = [0.97,0.85,0.32];
+double[] values5 = [0.32,0.85,0.97];
+
+//network.Build();
+var result1 = network.ForwardPass(values1);
+var result2 = network.ForwardPass(values2);
+var result3 = network.ForwardPass(values3);
+var result4 = network.ForwardPass(values4);
+var result5 = network.ForwardPass(values5);
+
+//network.Print();
+Console.WriteLine("1Final:" + string.Join(" ", result1));
+Console.WriteLine("2Final:" + string.Join(" ", result2));
+Console.WriteLine("3Final:" + string.Join(" ", result3));
+Console.WriteLine("4Final:" + string.Join(" ", result4));
+Console.WriteLine("5Final:" + string.Join(" ", result5));
+//Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
+
+network.Save(savePath);
+
+// save
+//NetworkSerializer.Save(network, "newSerTest.json");

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "tuXSDTChxQY=",
+  "success": true,
+  "projectFilePath": "/home/rafael/Code/ML/Ai.csproj",
+  "expectedPackageFiles": [
+    "/home/rafael/.nuget/packages/ilgpu/1.5.3/ilgpu.1.5.3.nupkg.sha512",
+    "/home/rafael/.nuget/packages/ilgpu.algorithms/1.5.3/ilgpu.algorithms.1.5.3.nupkg.sha512"
+  ],
+  "logs": []
+}
