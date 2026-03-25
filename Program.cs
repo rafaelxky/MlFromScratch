@@ -9,15 +9,16 @@ using System.Text.Json;
 //network.AddNewLayer(3,af);
 //network.AddNewLayer(3,af);
 
-var af = new ReLUActivation();
+var af = new LeakyReLUActivation();
 var savePath = Path.Join("v2save.json");
-//var network = Network.Load(savePath);
-//var network = new Network(3,3,af);
-var network = Network.Load(savePath);
-network.Config.AccelerationType = AccelerationType.SimdParallel;
-var trainer = new MlNetworkTrainer(network);
+/*
+var network = new Network(3,3,af);
 network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
+*/
+var network = Network.Load(savePath);
+network.Config.AccelerationType = AccelerationType.Simd;
+var trainer = new MlNetworkTrainer(network);
 
 // todo: implement gpu in backprop
 

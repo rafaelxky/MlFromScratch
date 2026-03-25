@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Text.Json;
 using ILGPU.Backends;
@@ -5,18 +6,22 @@ using ILGPU.IR;
 
 public class Network : INetwork
 {
-    public List<Layer> Layers { get; set; }
+    required
+    // layers [neuron,weight]
+    public List<Layer> Layers
+    { get; set; }
     public int Depth => Layers.Count;
     public Layer LastLayer => Layers[Layers.Count - 1];
     public Layer FirstLayer => Layers[0];
-    private Random _random;
-    private GpuUtils gpu;
+    private readonly Random _random;
+    private readonly GpuUtils gpu;
     public NetworkConfig Config;
     public int MaxSize = 0;
 
     double[] bufferA;
     double[] bufferB;
 
+    [SetsRequiredMembers]
     public Network(List<Layer> layers)
     {
         Layers = layers;
@@ -35,6 +40,7 @@ public class Network : INetwork
         bufferB = new double[MaxSize];
     }
 
+    [SetsRequiredMembers]
     public Network(int inputSize, int neuronCount, IActivationFunction activationFunction)
     {
         MaxSize = inputSize;
@@ -174,8 +180,8 @@ public class Network : INetwork
 
         foreach (var layer in Layers)
         {
-            int inputSize   = layer.Neurons.GetLength(1);
-            int outputSize  = layer.NeuronCount;
+            int inputSize = layer.Neurons.GetLength(1);
+            int outputSize = layer.NeuronCount;
             var cache = new LayerCache
             {
                 Inputs = current[..inputSize].ToArray()
@@ -204,8 +210,8 @@ public class Network : INetwork
         //Console.WriteLine($"inputs [{string.Join(", ", values)}]");
         foreach (var layer in Layers)
         {
-            int inputSize   = layer.Neurons.GetLength(1);
-            int outputSize  = layer.NeuronCount;
+            int inputSize = layer.Neurons.GetLength(1);
+            int outputSize = layer.NeuronCount;
 
             var cache = new LayerCache
             {
@@ -280,6 +286,7 @@ public class Network : INetwork
         {
             var textContent = File.ReadAllText(path);
             var layers = JsonSerializer.Deserialize<List<Layer>>(textContent, options);
+
             foreach (var layer in layers!)
             {
                 layer.SetActivationFunction(ActivationFunctionRegistry.GetFunction(layer.ActivationFunction));
@@ -288,9 +295,7 @@ public class Network : INetwork
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"Failed to parse network: {ex.Message}");
-            Environment.Exit(0);
-            return null;
+            throw new Exception($"Failed to load network from {path}: {ex.Message}");
         }
     }
 }

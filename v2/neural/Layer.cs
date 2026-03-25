@@ -1,16 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 public class Layer: ILayer
 {
-    required
+    [JsonInclude]
     public double[,] Neurons { get; set; }
-    required
+    [JsonInclude]
     public double[] Bias { get; set; }
-    required
+    [JsonInclude]
     public string ActivationFunction { get; set; }
-    required
+    [JsonIgnore]
     public IActivationFunction _activationFunction;
+    [JsonIgnore]
     public int NeuronCount => Neurons.GetLength(0);
+    [JsonIgnore]
     public int WeightCount => Neurons.GetLength(1);
 
     public Layer()
