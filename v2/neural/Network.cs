@@ -24,6 +24,15 @@ public class Network : INetwork
         gpu.CompileDoubleNetworkKernels();
         Config = new();
         _random = new Random();
+        foreach (var layer in layers)
+        {
+            if (layer.NeuronCount > MaxSize)
+            {
+                MaxSize = layer.NeuronCount;
+            }
+        }
+        bufferA = new double[MaxSize];
+        bufferB = new double[MaxSize];
     }
 
     public Network(int inputSize, int neuronCount, IActivationFunction activationFunction)
@@ -236,12 +245,6 @@ public class Network : INetwork
 
             LayerCache currentLayerCache = layerCaches[i];
             LayerCache? nextLayerCache = (layerCaches.Count > i + 1) ? layerCaches[i + 1] : null;
-
-            Console.WriteLine($"layer {i}");
-            Console.WriteLine($"cacheInputs [{string.Join(", ", currentLayerCache.Inputs)}]");
-            Console.WriteLine($"cacheOutputs [{string.Join(", ", currentLayerCache.Outputs)}]");
-            var deltasStr = currentLayerCache.Deltas == null ? "null" : string.Join(" ",currentLayerCache.Deltas);
-            Console.WriteLine($"cacheDeltas [{deltasStr}]");
 
             layer.BackPropagation(
                 nextLayer,

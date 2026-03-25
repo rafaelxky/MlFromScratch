@@ -12,8 +12,9 @@ using System.Text.Json;
 var af = new ReLUActivation();
 var savePath = Path.Join("v2save.json");
 //var network = Network.Load(savePath);
-var network = new Network(3,3,af);
-network.Config.AccelerationType = AccelerationType.Scalar;
+//var network = new Network(3,3,af);
+var network = Network.Load(savePath);
+network.Config.AccelerationType = AccelerationType.SimdParallel;
 var trainer = new MlNetworkTrainer(network);
 network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
@@ -99,7 +100,7 @@ double[][] targets2 =
 
 // learning
 var learningRate = 0.01;
-for (int epoch = 0; epoch < 200; epoch++)
+for (int epoch = 0; epoch < 1000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
