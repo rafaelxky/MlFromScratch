@@ -3,38 +3,33 @@ using System.Runtime.Intrinsics.X86;
 
 public static class SimdUtils
 {
-    public static double[] ForwardPass(Layer layer, double[] input)
+    public static void ForwardPass(Layer layer, double[] input, double[] outputBuffer)
     {
-        return ForwardPass(layer.Neurons, input, layer.Bias, layer._activationFunction);
+        ForwardPass(layer.Neurons, input, layer.Bias, layer._activationFunction, outputBuffer);
     }
-    public static double[] ForwardPass(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction)
+    public static void ForwardPass(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction, double[] outputBuffer)
     {
-        double[] output = new double[neuronMatrix.GetLength(0)];
+        //double[] output = new double[neuronMatrix.GetLength(0)];
         // foreach neuron in layer, calc output and build vector
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var _);
+            outputBuffer[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var _);
         }
-
-        return output;
     }
 
-    public static double[] ForwardTrain(Layer layer, double[] input, out double[] preActivationValues)
+    public static void ForwardTrain(Layer layer, double[] input,double[] outputBuffer ,out double[] preActivationValues)
     {
-        var result = ForwardTrain(layer.Neurons, input, layer.Bias, layer._activationFunction, out var preActivationValuesInner);
+        ForwardTrain(layer.Neurons, input,outputBuffer,layer.Bias, layer._activationFunction, out var preActivationValuesInner);
         preActivationValues = preActivationValuesInner;
-        return result;
     }
 
-    public static double[] ForwardTrain(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
+    public static void ForwardTrain(double[,] neuronMatrix, double[] input, double[] outputBuffer,double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
     {
-        double[] output = new double[neuronMatrix.GetLength(0)];
         preActivationValues = new double[neuronMatrix.GetLength(0)];
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out preActivationValues[i]);
+            outputBuffer[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out preActivationValues[i]);
         }
-        return output;
     }
 
     public static double CalcNeuronOutput(double[,] neurons,int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)

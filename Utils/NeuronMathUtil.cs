@@ -41,9 +41,7 @@ public static class NeuronMathUtil
     }
     public static double[] ForwardTrain(Layer layer, double[] input, out double[] preActivationValues)
     {
-        var result = ForwardTrain(layer.Neurons, input, layer.Bias, layer._activationFunction, out var preActivationValuesInner);
-        preActivationValues = preActivationValuesInner;
-        return result;
+        return ForwardTrain(layer.Neurons, input, layer.Bias, layer._activationFunction, out preActivationValues);
     }
     public static double CalcNeuronOutput(double[,] neurons,int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
     {

@@ -1,8 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
+
 public class Layer: ILayer
 {
+    required
     public double[,] Neurons { get; set; }
+    required
     public double[] Bias { get; set; }
+    required
     public string ActivationFunction { get; set; }
+    required
     public IActivationFunction _activationFunction;
     public int NeuronCount => Neurons.GetLength(0);
     public int WeightCount => Neurons.GetLength(1);
@@ -13,6 +19,7 @@ public class Layer: ILayer
     }
 
     // random instantiation
+    [SetsRequiredMembers]
     public Layer(int neuronCount, int weightCount, Random rand, IActivationFunction activationFunction)
     {
         ActivationFunction = activationFunction.Name;

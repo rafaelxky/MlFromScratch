@@ -9,12 +9,17 @@ public class Network : INetwork
     public int Depth => Layers.Count;
     public Layer LastLayer => Layers[Layers.Count - 1];
     public Layer FirstLayer => Layers[0];
-    private Random? _random;
+    private Random _random;
     private GpuUtils gpu;
     public NetworkConfig Config;
+    public int MaxSize = 0;
 
-    public Network()
+    double[] bufferA;
+    double[] bufferB;
+
+    public Network(List<Layer> layers)
     {
+        Layers = layers;
         gpu = new();
         gpu.CompileDoubleNetworkKernels();
         Config = new();
@@ -23,15 +28,24 @@ public class Network : INetwork
 
     public Network(int inputSize, int neuronCount, IActivationFunction activationFunction)
     {
+        MaxSize = inputSize;
         Layers = new();
         _random = new Random();
         Layers.Add(new Layer(neuronCount, inputSize, _random, activationFunction));
         gpu = new();
         gpu.CompileDoubleNetworkKernels();
         Config = new();
+        bufferA = new double[MaxSize];
+        bufferB = new double[MaxSize];
     }
     public void AddNewLayer(int neuronCount, IActivationFunction activationFunction)
     {
+        if (neuronCount > MaxSize)
+        {
+            MaxSize = neuronCount;
+            bufferA = new double[MaxSize];
+            bufferB = new double[MaxSize];
+        }
         var lastLayerNeuronCount = Layers[Layers.Count - 1].Neurons.GetLength(0);
         Layers.Add(new Layer(neuronCount, lastLayerNeuronCount, _random, activationFunction));
     }
@@ -48,6 +62,8 @@ public class Network : INetwork
                 return ForwardPassSimd(values);
             case AccelerationType.Gpu:
                 return ForwardPassGpu(values);
+            case AccelerationType.SimdParallel:
+                return ForwardPassSimdParallel(values);
             default:
                 return ForwardPassCpu(values);
         }
@@ -67,12 +83,37 @@ public class Network : INetwork
     }
     public double[] ForwardPassSimd(double[] values)
     {
-        double[] output = values;
+        values.CopyTo(bufferA, 0);
+
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
         foreach (var layer in Layers)
         {
-            output = SimdUtils.ForwardPass(layer, output);
+            SimdUtils.ForwardPass(layer, current, next);
+            (current, next) = (next, current);
         }
-        return output;
+
+        return current[..Layers[^1].NeuronCount];
+    }
+    public double[] ForwardPassSimdParallel(double[] values)
+    {
+        values.CopyTo(bufferA, 0);
+
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+        foreach (var layer in Layers)
+        {
+            // current (input) needs to be of correct lenght
+            ParallelUtils.ForwardPass(layer, current, next);
+            (current, next) = (next, current);
+        }
+        return current[..Layers[^1].NeuronCount];
     }
     public double[] ForwardTrain(double[] values, out List<LayerCache> layerCaches)
     {
@@ -80,23 +121,17 @@ public class Network : INetwork
         {
             throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
         }
-        double[] result;
         switch (Config.AccelerationType)
         {
             case AccelerationType.Simd:
-                result = ForwardTrainSimd(values, out var cache1);
-                layerCaches = cache1;
-                break;
+                return ForwardTrainSimd(values, out layerCaches);
             case AccelerationType.Gpu:
-                result = ForwardTrainGpu(values, out var cache2);
-                layerCaches = cache2;
-                break;
+                return ForwardTrainGpu(values, out layerCaches);
+            case AccelerationType.SimdParallel:
+                return ForwardTrainSimdParallel(values, out layerCaches);
             default:
-                result = ForwardTrainCpu(values, out var cache3);
-                layerCaches = cache3;
-                break;
+                return ForwardTrainCpu(values, out layerCaches);
         }
-        return result;
     }
     public double[] ForwardTrainCpu(double[] values, out List<LayerCache> layerCaches)
     {
@@ -107,11 +142,11 @@ public class Network : INetwork
         {
             var cache = new LayerCache
             {
-                Inputs = output
+                Inputs = (double[])output.Clone()
             };
             //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
             output = NeuronMathUtil.ForwardTrain(layer, output, out var preActivationValues);
-            cache.Outputs = output;
+            cache.Outputs = (double[])output.Clone();
             cache.PreActivationValues = preActivationValues;
             layerCaches.Add(cache);
         }
@@ -120,25 +155,67 @@ public class Network : INetwork
     public double[] ForwardTrainSimd(double[] values, out List<LayerCache> layerCaches)
     {
         layerCaches = new();
-        double[] output = values;
+
+        values.CopyTo(bufferA, 0);
+
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
 
         foreach (var layer in Layers)
         {
+            int inputSize   = layer.Neurons.GetLength(1);
+            int outputSize  = layer.NeuronCount;
             var cache = new LayerCache
             {
-                Inputs = output
+                Inputs = current[..inputSize].ToArray()
             };
             //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
-            output = SimdUtils.ForwardTrain(layer, output, out var preActivationValues);
-            cache.Outputs = output;
+            SimdUtils.ForwardTrain(layer, current, next, out var preActivationValues);
+            cache.Outputs = next[..outputSize].ToArray();
             cache.PreActivationValues = preActivationValues;
             layerCaches.Add(cache);
+            (current, next) = (next, current);
         }
-        return output;
+        return current[..Layers[^1].NeuronCount];
+    }
+    public double[] ForwardTrainSimdParallel(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
+
+        values.CopyTo(bufferA, 0);
+
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+
+        Console.WriteLine($"inputs [{string.Join(", ", values)}]");
+        foreach (var layer in Layers)
+        {
+            int inputSize   = layer.Neurons.GetLength(1);
+            int outputSize  = layer.NeuronCount;
+
+            var cache = new LayerCache
+            {
+                Inputs = current[..inputSize].ToArray()
+            };
+            Console.WriteLine($"cacheInputs [{string.Join(", ", cache.Inputs)}]");
+            //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
+            ParallelUtils.ForwardTrain(layer, current, next, out var preActivationValues);
+            cache.Outputs = next[..outputSize].ToArray();
+            Console.WriteLine($"cacheOutputs [{string.Join(", ", cache.Inputs)}]");
+            cache.PreActivationValues = preActivationValues;
+            layerCaches.Add(cache);
+            (current, next) = (next, current);
+        }
+        return current[..Layers[^1].NeuronCount];
     }
     public double[] ForwardTrainGpu(double[] values, out List<LayerCache> layerCaches)
     {
-        
+
         var output = gpu.NetworkForwardTrain(values, Layers, out var preActivationValues);
         layerCaches = preActivationValues;
         return output;
@@ -159,6 +236,9 @@ public class Network : INetwork
             LayerCache currentLayerCache = layerCaches[i];
             LayerCache? nextLayerCache = (layerCaches.Count > i + 1) ? layerCaches[i + 1] : null;
 
+            Console.WriteLine($"cacheInputs [{string.Join(", ", currentLayerCache.Inputs)}]");
+            Console.WriteLine($"cacheOutputs [{string.Join(", ", currentLayerCache.Outputs)}]");
+
             layer.BackPropagation(
                 nextLayer,
                 targetOutput,
@@ -173,18 +253,37 @@ public class Network : INetwork
 
     public void Save(string path)
     {
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var jsonContent = JsonSerializer.Serialize(this, options);
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new TwoDimensionalArrayConverter() },
+            WriteIndented = true
+        };
+        var jsonContent = JsonSerializer.Serialize(Layers, options);
         File.WriteAllText(path, jsonContent);
     }
     public static Network Load(string path)
     {
-        var textContent = File.ReadAllText(path);
-        var network = JsonSerializer.Deserialize<Network>(textContent);
-        foreach (var layer in network.Layers)
+        var options = new JsonSerializerOptions
         {
-            layer.SetActivationFunction(ActivationFunctionRegistry.GetFunction(layer.ActivationFunction));
+            Converters = { new TwoDimensionalArrayConverter() },
+            WriteIndented = true
+        };
+
+        try
+        {
+            var textContent = File.ReadAllText(path);
+            var layers = JsonSerializer.Deserialize<List<Layer>>(textContent, options);
+            foreach (var layer in layers!)
+            {
+                layer.SetActivationFunction(ActivationFunctionRegistry.GetFunction(layer.ActivationFunction));
+            }
+            return new Network(layers);
         }
-        return network;
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Failed to parse network: {ex.Message}");
+            Environment.Exit(0);
+            return null;
+        }
     }
 }

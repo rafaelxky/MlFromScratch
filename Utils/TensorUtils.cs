@@ -59,4 +59,15 @@ public static class TensorUtils
         }
         return output;
     }
+
+    public static double[,] FlattenMatrix(double[][] matrix, int rows, int cols)
+    {
+        double[,] flatMatrix = new double[rows, cols];
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                flatMatrix[i, j] = matrix[i][j];
+        return flatMatrix;
+    }
+
+    
 }

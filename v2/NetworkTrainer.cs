@@ -1,6 +1,6 @@
 public class MlNetworkTrainer
 {
-    private List<LayerCache> _layerCaches;
+    private List<LayerCache>? _layerCaches;
     private INetwork _network;
     public MlNetworkTrainer(INetwork network)
     {

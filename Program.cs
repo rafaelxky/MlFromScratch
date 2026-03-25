@@ -5,20 +5,20 @@ using System.Text.Json;
 //var network = trainingNetwork;
 //var network = NetworkSerializer.LoadTrainingNetworkDefault("newSerTest.json", new SwishActivation());
 
-var af = new SigmoidActivation();
 //var network = new Network(3,3,af);
 //network.AddNewLayer(3,af);
 //network.AddNewLayer(3,af);
 
+var af = new ReLUActivation();
 var savePath = Path.Join("v2save.json");
 //var network = Network.Load(savePath);
 var network = new Network(3,3,af);
-network.Config.AccelerationType = AccelerationType.Simd;
+network.Config.AccelerationType = AccelerationType.Scalar;
 var trainer = new MlNetworkTrainer(network);
-network.AddNewLayer(1000,af);
-network.AddNewLayer(1000,af);
-network.AddNewLayer(1000,af);
-network.AddNewLayer(1000,af);
+network.AddNewLayer(4,af);
+network.AddNewLayer(4,af);
+network.AddNewLayer(4,af);
+network.AddNewLayer(4,af);
 network.AddNewLayer(3,af);
 
 // todo: implement gpu in backprop
@@ -102,7 +102,7 @@ double[][] targets2 =
 
 // learning
 var learningRate = 0.001;
-for (int epoch = 0; epoch < 2000; epoch++)
+for (int epoch = 0; epoch < 1; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
