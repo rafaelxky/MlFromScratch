@@ -8,7 +8,7 @@ public static class NeuronMathUtil
         double output = 0;
         for (int i = 0; i < layer.GetLength(0); i++)
         {
-            output += Math.Sign(layer[neuronId,i]) * input[i];
+            output += Math.Sign(layer[neuronId, i]) * input[i];
         }
         output += bias;
         preActivation = output;
@@ -20,7 +20,7 @@ public static class NeuronMathUtil
         // foreach neuron in layer, calc output and build vector
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var _);
+            output[i] = CalcNeuronOutput(neuronMatrix, i, input, bias[i], activationFunction, out var _);
         }
 
         return output;
@@ -35,7 +35,8 @@ public static class NeuronMathUtil
         preActivationValues = new double[neuronMatrix.GetLength(0)];
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out preActivationValues[i]);
+            output[i] = CalcNeuronOutput(neuronMatrix, i, input, bias[i], activationFunction, out var preActivationValuesInner);
+            preActivationValues[i] = preActivationValuesInner;
         }
         return output;
     }
@@ -43,12 +44,13 @@ public static class NeuronMathUtil
     {
         return ForwardTrain(layer.Neurons, input, layer.Bias, layer._activationFunction, out preActivationValues);
     }
-    public static double CalcNeuronOutput(double[,] neurons,int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
+    public static double CalcNeuronOutput(double[,] neurons, int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
     {
         //double output = TensorUtils.WeightInputDotProd(neurons, neuronId, input);
-        double output = TensorUtils.WeightInputDotProd(neurons,neuronId, input);
+        double output = TensorUtils.WeightInputDotProd(neurons, neuronId, input);
         output += bias;
         preActivation = output;
+        //Console.WriteLine($"neuronId {neuronId} preActivation={preActivation}");
         return activationFunction.Apply(output);
     }
 
@@ -60,7 +62,7 @@ public static class NeuronMathUtil
         // for each weight
         for (int i = 0; i < layer.GetLength(0); i++)
         {
-            layer[neuronId,i] -= gradientStep * neuronInputs[i];
+            layer[neuronId, i] -= gradientStep * neuronInputs[i];
         }
         neuronBias -= gradientStep;
     }
@@ -78,11 +80,10 @@ public static class NeuronMathUtil
             )
     {
         double error = MathUtils.CalcError(nextLayer.GetNeuronWeights(), neuronId, nextLayerDeltas);
-        var gradientStep = MathUtils.GetGradientStep(learningRate, error, preActivation, activationFunction, out var deltaInner);
-        delta = deltaInner;
+        var gradientStep = MathUtils.GetGradientStep(learningRate, error, preActivation, activationFunction, out delta);
         for (int i = 0; i < layer.GetLength(1); i++)
         {
-            layer[neuronId,i] -= gradientStep * neuronInputs[i];
+            layer[neuronId, i] -= gradientStep * neuronInputs[i];
         }
         neuronBias -= gradientStep;
     }

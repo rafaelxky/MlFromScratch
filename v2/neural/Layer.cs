@@ -70,6 +70,9 @@ public class Layer: ILayer
                 deltas[i] = delta;
             }
             layerCache.Deltas = deltas;
+
+            var deltasStr = deltas == null ? "null" : string.Join(" ",deltas);
+            Console.WriteLine($"savingDeltas [{deltasStr}]");
         } else
         {
             // for each neuron
@@ -90,7 +93,10 @@ public class Layer: ILayer
                 );
                 deltas[i] = delta;
             }
-                layerCache.Deltas = deltas;
+            layerCache.Deltas = deltas;
+
+            var deltasStr = deltas == null ? "null" : string.Join(" ",deltas);
+            Console.WriteLine($"savingDeltas [{deltasStr}]");
         }
     }
     public void SetActivationFunction(IActivationFunction activationFunction)

@@ -15,10 +15,7 @@ var savePath = Path.Join("v2save.json");
 var network = new Network(3,3,af);
 network.Config.AccelerationType = AccelerationType.Scalar;
 var trainer = new MlNetworkTrainer(network);
-network.AddNewLayer(4,af);
-network.AddNewLayer(4,af);
-network.AddNewLayer(4,af);
-network.AddNewLayer(4,af);
+network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
 
 // todo: implement gpu in backprop
@@ -101,8 +98,8 @@ double[][] targets2 =
 
 
 // learning
-var learningRate = 0.001;
-for (int epoch = 0; epoch < 1; epoch++)
+var learningRate = 0.01;
+for (int epoch = 0; epoch < 200; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {

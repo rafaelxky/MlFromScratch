@@ -74,6 +74,7 @@ public class Network : INetwork
     }
     public double[] ForwardPassCpu(double[] values)
     {
+        Console.WriteLine("Forward pass cpu");
         double[] output = values;
         foreach (var layer in Layers)
         {
@@ -144,7 +145,6 @@ public class Network : INetwork
             {
                 Inputs = (double[])output.Clone()
             };
-            //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
             output = NeuronMathUtil.ForwardTrain(layer, output, out var preActivationValues);
             cache.Outputs = (double[])output.Clone();
             cache.PreActivationValues = preActivationValues;
@@ -192,7 +192,7 @@ public class Network : INetwork
         double[] next = bufferB;
 
 
-        Console.WriteLine($"inputs [{string.Join(", ", values)}]");
+        //Console.WriteLine($"inputs [{string.Join(", ", values)}]");
         foreach (var layer in Layers)
         {
             int inputSize   = layer.Neurons.GetLength(1);
@@ -202,11 +202,11 @@ public class Network : INetwork
             {
                 Inputs = current[..inputSize].ToArray()
             };
-            Console.WriteLine($"cacheInputs [{string.Join(", ", cache.Inputs)}]");
+            //Console.WriteLine($"cacheInputs [{string.Join(", ", cache.Inputs)}]");
             //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
             ParallelUtils.ForwardTrain(layer, current, next, out var preActivationValues);
             cache.Outputs = next[..outputSize].ToArray();
-            Console.WriteLine($"cacheOutputs [{string.Join(", ", cache.Inputs)}]");
+            //Console.WriteLine($"cacheOutputs [{string.Join(", ", cache.Inputs)}]");
             cache.PreActivationValues = preActivationValues;
             layerCaches.Add(cache);
             (current, next) = (next, current);
@@ -223,6 +223,7 @@ public class Network : INetwork
 
     public void BackPropagation(double[] expected, double learningRate, List<LayerCache> layerCaches)
     {
+        // for each layer
         for (int i = Depth - 1; i >= 0; i--)
         {
             Layer layer = Layers[i];
@@ -236,8 +237,11 @@ public class Network : INetwork
             LayerCache currentLayerCache = layerCaches[i];
             LayerCache? nextLayerCache = (layerCaches.Count > i + 1) ? layerCaches[i + 1] : null;
 
+            Console.WriteLine($"layer {i}");
             Console.WriteLine($"cacheInputs [{string.Join(", ", currentLayerCache.Inputs)}]");
             Console.WriteLine($"cacheOutputs [{string.Join(", ", currentLayerCache.Outputs)}]");
+            var deltasStr = currentLayerCache.Deltas == null ? "null" : string.Join(" ",currentLayerCache.Deltas);
+            Console.WriteLine($"cacheDeltas [{deltasStr}]");
 
             layer.BackPropagation(
                 nextLayer,
