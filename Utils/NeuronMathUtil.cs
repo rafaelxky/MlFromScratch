@@ -20,7 +20,7 @@ public static class NeuronMathUtil
         // foreach neuron in layer, calc output and build vector
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = NeuronMathUtil.CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var preActivationValueInner);
+            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var _);
         }
 
         return output;
@@ -35,8 +35,7 @@ public static class NeuronMathUtil
         preActivationValues = new double[neuronMatrix.GetLength(0)];
         for (int i = 0; i < neuronMatrix.GetLength(0); i++)
         {
-            output[i] = NeuronMathUtil.CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out var preActivationValueInner);
-            preActivationValues[i] = preActivationValueInner;
+            output[i] = CalcNeuronOutput(neuronMatrix,i, input, bias[i], activationFunction, out preActivationValues[i]);
         }
         return output;
     }
@@ -48,7 +47,8 @@ public static class NeuronMathUtil
     }
     public static double CalcNeuronOutput(double[,] neurons,int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
     {
-        double output = TensorUtils.WeightInputDotProd(neurons, neuronId, input);
+        //double output = TensorUtils.WeightInputDotProd(neurons, neuronId, input);
+        double output = TensorUtils.WeightInputDotProd(neurons,neuronId, input);
         output += bias;
         preActivation = output;
         return activationFunction.Apply(output);

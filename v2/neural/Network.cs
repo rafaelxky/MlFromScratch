@@ -1,3 +1,4 @@
+using System.IO.Pipelines;
 using System.Text.Json;
 using ILGPU.Backends;
 using ILGPU.IR;
@@ -37,29 +38,26 @@ public class Network : INetwork
 
     public double[] ForwardPass(double[] values)
     {
-        if (Config.UseGpu)
+        if (values.Length != FirstLayer.WeightCount)
         {
-            return ForwardPassGpu(values);
+            throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
         }
-        else
+        switch (Config.AccelerationType)
         {
-            return ForwardPassCpu(values);
+            case AccelerationType.Simd:
+                return ForwardPassSimd(values);
+            case AccelerationType.Gpu:
+                return ForwardPassGpu(values);
+            default:
+                return ForwardPassCpu(values);
         }
     }
     public double[] ForwardPassGpu(double[] values)
     {
-        if (values.Length != FirstLayer.WeightCount)
-        {
-            throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
-        }
         return gpu.NetworkForwardPass(values, Layers);
     }
     public double[] ForwardPassCpu(double[] values)
     {
-        if (values.Length != FirstLayer.WeightCount)
-        {
-            throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
-        }
         double[] output = values;
         foreach (var layer in Layers)
         {
@@ -67,28 +65,42 @@ public class Network : INetwork
         }
         return output;
     }
+    public double[] ForwardPassSimd(double[] values)
+    {
+        double[] output = values;
+        foreach (var layer in Layers)
+        {
+            output = SimdUtils.ForwardPass(layer, output);
+        }
+        return output;
+    }
     public double[] ForwardTrain(double[] values, out List<LayerCache> layerCaches)
     {
-        if (Config.UseGpu)
-        {
-            var result = ForwardTrainGpu(values, out var cache);
-            layerCaches = cache;
-            return result;
-        }
-        else
-        {
-            var result = ForwardTrainCpu(values, out var cache);
-            layerCaches = cache;
-            return result;
-        }
-    }
-    public double[] ForwardTrainCpu(double[] values, out List<LayerCache> layerCaches)
-    {
-        layerCaches = new();
         if (values.Length != FirstLayer.WeightCount)
         {
             throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
         }
+        double[] result;
+        switch (Config.AccelerationType)
+        {
+            case AccelerationType.Simd:
+                result = ForwardTrainSimd(values, out var cache1);
+                layerCaches = cache1;
+                break;
+            case AccelerationType.Gpu:
+                result = ForwardTrainGpu(values, out var cache2);
+                layerCaches = cache2;
+                break;
+            default:
+                result = ForwardTrainCpu(values, out var cache3);
+                layerCaches = cache3;
+                break;
+        }
+        return result;
+    }
+    public double[] ForwardTrainCpu(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
         double[] output = values;
 
         foreach (var layer in Layers)
@@ -105,23 +117,35 @@ public class Network : INetwork
         }
         return output;
     }
+    public double[] ForwardTrainSimd(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
+        double[] output = values;
+
+        foreach (var layer in Layers)
+        {
+            var cache = new LayerCache
+            {
+                Inputs = output
+            };
+            //output = gpu.ForwardTrain(layer,output,out var preActivationValues);
+            output = SimdUtils.ForwardTrain(layer, output, out var preActivationValues);
+            cache.Outputs = output;
+            cache.PreActivationValues = preActivationValues;
+            layerCaches.Add(cache);
+        }
+        return output;
+    }
     public double[] ForwardTrainGpu(double[] values, out List<LayerCache> layerCaches)
     {
-        if (values.Length != FirstLayer.WeightCount)
-        {
-            throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
-        }
-        var output = gpu.NetworkForwardTrain(values, Layers,out var preActivationValues);
+        
+        var output = gpu.NetworkForwardTrain(values, Layers, out var preActivationValues);
         layerCaches = preActivationValues;
         return output;
     }
 
     public void BackPropagation(double[] expected, double learningRate, List<LayerCache> layerCaches)
     {
-        if (expected.Length != LastLayer.NeuronCount)
-        {
-            throw new WrongInputSizeException($"Back propagation input must have length {LastLayer.WeightCount} for this network!");
-        }
         for (int i = Depth - 1; i >= 0; i--)
         {
             Layer layer = Layers[i];

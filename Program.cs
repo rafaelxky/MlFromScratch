@@ -13,7 +13,7 @@ var af = new SigmoidActivation();
 var savePath = Path.Join("v2save.json");
 //var network = Network.Load(savePath);
 var network = new Network(3,3,af);
-network.Config.UseGpu = false;
+network.Config.AccelerationType = AccelerationType.Simd;
 var trainer = new MlNetworkTrainer(network);
 network.AddNewLayer(1000,af);
 network.AddNewLayer(1000,af);
@@ -107,6 +107,7 @@ for (int epoch = 0; epoch < 2000; epoch++)
     for (int i = 0; i < inputs2.Length; i++)
     {
         var result = trainer.ForwardTrain(inputs2[i]);
+        //var result = network.ForwardPass(inputs2[i]);
         trainer.Train(targets2[i], learningRate);
         Console.WriteLine(JsonSerializer.Serialize(result) +" - "+ JsonSerializer.Serialize(targets2[i]));
     }
