@@ -52,6 +52,8 @@ public class Network2Bit : INetwork
         {
             case AccelerationType.Simd:
                 return ForwardPassSimd(values);
+            case AccelerationType.SimdParallel:
+                return ForwardPassSimd(values);
             default:
                 return ForwardPassCpu(values);
         }
@@ -83,17 +85,26 @@ public class Network2Bit : INetwork
     }
     public double[] ForwardTrain(double[] values, out List<LayerCache> layerCaches)
     {
-        layerCaches = new();
         if (values.Length != FirstLayer.WeightCount)
         {
             throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
         }
-        double[] output = values;
 
+        switch (Config.AccelerationType)
+        {
+            default:
+                return ForwardTrainCpu(values, out layerCaches);
+        }
+    }
+
+    public double[] ForwardTrainCpu(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
+        double[] output = values;
         foreach (var layer in Layers)
         {
-            output = layer.ForwardTrain(output, out var trainingCache);
-            layerCaches.Add(trainingCache);
+            output = layer.ForwardTrain(output, out var layerCachesInner);
+            layerCaches.Add(layerCachesInner);
         }
         return output;
     }
