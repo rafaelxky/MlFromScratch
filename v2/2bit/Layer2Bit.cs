@@ -78,6 +78,7 @@ public class Layer2Bit : ILayer
             double[] deltas = new double[LatentWeights.GetLength(0)];
             for (int i = 0; i < LatentWeights.GetLength(0); i++)
             {
+                Console.WriteLine($"i={i} | finalOutput={layerCache.Outputs[i]}, target={target[i]}, preActivation={layerCache.PreActivationValues[i]}, bias={Bias[i]}");
                 NeuronMathUtil.UpdateNeuronAtOutput(
                     LatentWeights,
                     i,
@@ -90,8 +91,10 @@ public class Layer2Bit : ILayer
                     ref Bias[i],
                     out var delta
                 );
+                Console.WriteLine($"i={i} delta={delta}, preActivation={layerCache.PreActivationValues[i]}, output={layerCache.Outputs[i]}, target={target[i]}, bias={Bias[i]}");
                 deltas[i] = delta;
             }
+            Console.WriteLine("Assigning deltas to layer cache: " + string.Join(", ", deltas));
             layerCache.Deltas = deltas;
         }
         else

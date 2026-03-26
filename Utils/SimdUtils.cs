@@ -19,7 +19,7 @@ public static class SimdUtils
 
     public static void ForwardTrain(Layer layer, double[] input,double[] outputBuffer ,out double[] preActivationValues)
     {
-        ForwardTrain(layer.Neurons, input,outputBuffer,layer.Bias, layer._activationFunction, out var preActivationValuesInner);
+        ForwardTrain(layer.GetNeuronWeights(), input,outputBuffer,layer.Bias, layer._activationFunction, out var preActivationValuesInner);
         preActivationValues = preActivationValuesInner;
     }
 

@@ -13,7 +13,7 @@ public class ParallelUtils
     }
     public static void ForwardTrain(Layer layer, double[] input,double[]  outputBuffer,out double[] preActivationValues)
     {
-        ForwardTrain(layer.Neurons, input, outputBuffer,layer.Bias, layer._activationFunction, out preActivationValues);
+        ForwardTrain(layer.GetNeuronWeights(), input, outputBuffer,layer.Bias, layer._activationFunction, out preActivationValues);
     }
     public static void ForwardTrain(double[,] neuronMatrix, double[] input,double[] outputBuffer ,double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
     {

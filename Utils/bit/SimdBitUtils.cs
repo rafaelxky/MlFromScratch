@@ -1,5 +1,6 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using ILGPU.IR.Values;
 
 public static class SimdBitUtils
 {
@@ -11,8 +12,31 @@ public static class SimdBitUtils
         // for each neuron in layer, calc output and build vector
         for (int i = 0; i < weights.GetLength(0); i++)
         {
-            outputBuffer[i] = activationFunction.Apply(PackedDotProduct(layers.Weights, i, input, weightLength) + layers.Bias[i]);
+            var output = PackedDotProduct(layers.Weights, i, input, weightLength);
+            output += layers.Bias[i];
+            output = activationFunction.Apply(output);
+            outputBuffer[i] = output;
         }
+    }
+    public static void ForwardTrainParallel(Layer2Bit layers, double[] input, double[] outputBuffer, out double[] preActivationValues)
+    {
+        ParallelUtils.ForwardTrain(layers.GetNeuronWeights(), input, outputBuffer, layers.Bias, layers._activationFunction, out preActivationValues);
+    }
+    public static void ForwardTrain(Layer2Bit layers, double[] input, double[] outputBuffer, out double[] preActivationValues)
+    {
+        SimdUtils.ForwardTrain(layers.GetNeuronWeights(), input, outputBuffer, layers.Bias, layers._activationFunction, out preActivationValues);
+    }
+
+    public static void ForwardPassParallel(Layer2Bit layers, double[] input, double[] outputBuffer)
+    {
+        var weights = layers.Weights;
+        var activationFunction = layers._activationFunction;
+        var weightLength = layers.Weights.GetLength(1);
+        // for each neuron in layer, calc output and build vector
+        Parallel.For(0, weights.GetLength(0), i =>
+        {
+            outputBuffer[i] = activationFunction.Apply(PackedDotProduct(layers.Weights, i, input, weightLength) + layers.Bias[i]);
+        });
     }
 
     public static double PackedDotProduct(byte[,] layer, int neuronId, double[] values, int weightLength)

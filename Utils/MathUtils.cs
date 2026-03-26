@@ -4,6 +4,7 @@ public static class MathUtils
     {
         var error = CalcErrorAtOutput(finalOutput, targetOutput);
         delta = CalcDelta(preActivation, error, activationFunction);
+        Console.WriteLine("Delta at output: " + delta);
         return learningRate * delta;
     }
     public static double GetGradientStep(double learningRate, double error, double preActivation, IActivationFunction activationFunction, out double delta)

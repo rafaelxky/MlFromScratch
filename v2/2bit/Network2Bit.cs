@@ -53,7 +53,7 @@ public class Network2Bit : INetwork
             case AccelerationType.Simd:
                 return ForwardPassSimd(values);
             case AccelerationType.SimdParallel:
-                return ForwardPassSimd(values);
+                return ForwardPassSimdParallel(values);
             default:
                 return ForwardPassCpu(values);
         }
@@ -70,6 +70,23 @@ public class Network2Bit : INetwork
         {
             // note: do not use input.lenght
             SimdBitUtils.ForwardPass(layer, current, next);
+            (current, next) = (next, current);
+        }
+        var output = current[..Layers[^1].Weights.GetLength(0)];
+        return output;
+    }
+    public double[] ForwardPassSimdParallel(double[] values)
+    {
+        values.CopyTo(bufferA, 0);
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+        foreach (var layer in Layers)
+        {
+            // note: do not use input.lenght
+            SimdBitUtils.ForwardPassParallel(layer, current, next);
             (current, next) = (next, current);
         }
         var output = current[..Layers[^1].Weights.GetLength(0)];
@@ -93,6 +110,10 @@ public class Network2Bit : INetwork
 
         switch (Config.AccelerationType)
         {
+            case AccelerationType.Simd:
+                return ForwardTrainSimd(values, out layerCaches);
+            case AccelerationType.SimdParallel:
+                return ForwardTrainSimdParallel(values, out layerCaches);
             default:
                 return ForwardTrainCpu(values, out layerCaches);
         }
@@ -116,6 +137,62 @@ public class Network2Bit : INetwork
         }
         return output;
     }
+    public double[] ForwardTrainSimd(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
+
+        values.CopyTo(bufferA, 0);
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+        foreach (var layer in Layers)
+        {
+            int inputSize = layer.LatentWeights.GetLength(1);
+            int outputSize = layer.LatentWeights.GetLength(0);
+            var cache = new LayerCache
+            {
+                Inputs = current[..inputSize].ToArray()
+            };
+            SimdBitUtils.ForwardTrain(layer, current, next, out var preActivationValues);
+
+            cache.Outputs = next[..outputSize].ToArray();
+            cache.PreActivationValues = (double[])preActivationValues.Clone();
+            layerCaches.Add(cache);
+            (current, next) = (next, current);
+        }
+        return current[..Layers[^1].NeuronCount];
+    }
+
+    public double[] ForwardTrainSimdParallel(double[] values, out List<LayerCache> layerCaches)
+    {
+        layerCaches = new();
+
+        values.CopyTo(bufferA, 0);
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+        foreach (var layer in Layers)
+        {
+            int inputSize = layer.LatentWeights.GetLength(1);
+            int outputSize = layer.LatentWeights.GetLength(0);
+            var cache = new LayerCache
+            {
+                Inputs = current[..inputSize].ToArray()
+            };
+            SimdBitUtils.ForwardTrainParallel(layer, current, next, out var preActivationValues);
+
+            cache.Outputs = next[..outputSize].ToArray();
+            Console.WriteLine($"After forward pass, layer outputs: {string.Join(", ", cache.Outputs)}");
+            cache.PreActivationValues = (double[])preActivationValues.Clone();
+            layerCaches.Add(cache);
+            (current, next) = (next, current);
+        }
+        return current[..Layers[^1].NeuronCount];
+    }
 
     public void BackPropagation(double[] expected, double learningRate, List<LayerCache> layerCaches)
     {
@@ -124,8 +201,17 @@ public class Network2Bit : INetwork
             throw new WrongInputSizeException($"Back propagation input must have length {LastLayer.WeightCount} for this network!");
         }
 
+        Console.WriteLine($"#### started back prop");
         for (int i = Depth - 1; i >= 0; i--)
         {
+
+            //Console.WriteLine($"Backprop layer {i}");
+            //Console.WriteLine($"Expected: {string.Join(" ", expected)}");
+            //Console.WriteLine($"Layer output: {string.Join(" ", layerCaches[i].Outputs)}");
+            //Console.WriteLine($"Layer preActivation: {string.Join(" ", layerCaches[i].PreActivationValues)}");
+            //Console.WriteLine($"Layer input: {string.Join(" ", layerCaches[i].Inputs)}");
+            //Console.WriteLine($"Layer deltas: {string.Join(" ", layerCaches[i].Deltas ?? new double[0])}");
+
             Layer2Bit layer = Layers[i];
             // null if last layer
             // next means closer to output
@@ -136,6 +222,10 @@ public class Network2Bit : INetwork
 
             LayerCache currentLayerCache = layerCaches[i];
             LayerCache? nextLayerCache = (layerCaches.Count > i + 1) ? layerCaches[i + 1] : null;
+
+            Console.WriteLine($"---- next layer cache {i+1}: deltas: {string.Join(", ", nextLayerCache?.Deltas ?? new double[0])}");
+            Console.WriteLine($"---- current layer cache {i+1}: deltas: {string.Join(", ", currentLayerCache.Deltas ?? new double[0])}");
+            Console.WriteLine($"---- current layer outputs {i+1}: deltas: {string.Join(", ", currentLayerCache.Outputs ?? new double[0])}");
 
             // next layer cache may be null and its deltas 0.
             // error calculation as also returning 0 due to delta.
@@ -149,6 +239,7 @@ public class Network2Bit : INetwork
                 );
 
             layerCaches[i] = currentLayerCache;
+            Console.WriteLine($"Assigned layer cache to {i}: delta: {string.Join(", ", currentLayerCache.Deltas ?? new double[0])}");
         }
     }
 
