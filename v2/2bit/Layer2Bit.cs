@@ -7,7 +7,7 @@ public class Layer2Bit : ILayer
     public byte[,] Weights { get; set; }
     public double[] Bias { get; set; }
     public string ActivationFunction { get; set; }
-    private IActivationFunction _activationFunction;
+    public IActivationFunction _activationFunction;
     public int NeuronCount => LatentWeights.GetLength(0);
     public int WeightCount => LatentWeights.GetLength(1);
 

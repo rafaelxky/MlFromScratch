@@ -6,7 +6,7 @@ public static class NeuronMathUtil
     public static double Calc2BitNeuronOutput(double[,] layer, int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
     {
         double output = 0;
-        for (int i = 0; i < layer.GetLength(0); i++)
+        for (int i = 0; i < layer.GetLength(1); i++)
         {
             output += Math.Sign(layer[neuronId, i]) * input[i];
         }

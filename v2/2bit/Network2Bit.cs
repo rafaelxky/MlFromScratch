@@ -1,29 +1,45 @@
 using System.Text.Json;
 
-public class Network2Bit: INetwork
+public class Network2Bit : INetwork
 {
     public List<Layer2Bit> Layers { get; set; }
     public int Depth => Layers.Count;
     public Layer2Bit LastLayer => Layers[Layers.Count - 1];
     public Layer2Bit FirstLayer => Layers[0];
     private Random _random;
+    public NetworkConfig Config;
+
+    double[] bufferA;
+    double[] bufferB;
+    public int MaxSize = 0;
 
     public Network2Bit()
     {
+        Config = new();
         Layers = new();
         _random = new();
     }
 
     public Network2Bit(int inputSize, int neuronCount, IActivationFunction activationFunction)
     {
+        Config = new();
         Layers = new();
         _random = new Random();
         Layers.Add(new Layer2Bit(neuronCount, inputSize, _random, activationFunction));
+        MaxSize = inputSize;
+        bufferA = new double[MaxSize];
+        bufferB = new double[MaxSize];
     }
     public void AddNewLayer(int neuronCount, IActivationFunction activationFunction)
     {
         var lastLayerNeuronCount = Layers[Layers.Count - 1].GetNeuronWeights().GetLength(0);
         Layers.Add(new Layer2Bit(neuronCount, lastLayerNeuronCount, _random, activationFunction));
+        if (neuronCount > MaxSize)
+        {
+            MaxSize = neuronCount;
+            bufferA = new double[MaxSize];
+            bufferB = new double[MaxSize];
+        }
     }
 
     public double[] ForwardPass(double[] values)
@@ -32,6 +48,32 @@ public class Network2Bit: INetwork
         {
             throw new WrongInputSizeException($"Forward pass input must have lenght {FirstLayer.WeightCount} for this network!");
         }
+        switch (Config.AccelerationType)
+        {
+            case AccelerationType.Simd:
+                return ForwardPassSimd(values);
+            default:
+                return ForwardPassCpu(values);
+        }
+    }
+    public double[] ForwardPassSimd(double[] values)
+    {
+        values.CopyTo(bufferA, 0);
+
+        // layer input
+        double[] current = bufferA;
+        // layer output
+        double[] next = bufferB;
+
+        foreach (var layer in Layers)
+        {
+            SimdBitUtils.ForwardPass(layer, current, next);
+            (current, next) = (next, current);
+        }
+        return current[..Layers[^1].NeuronCount];
+    }
+    public double[] ForwardPassCpu(double[] values)
+    {
         double[] output = values;
         foreach (var layer in Layers)
         {
@@ -87,53 +129,47 @@ public class Network2Bit: INetwork
         }
     }
 
-    public void SaveLatent(string path)
-    {
-        var layers = Layers;
-        var LatentWeightsSave = new LatentWeightsSave[Depth];
-        int i = 0;
-        foreach (var layer in layers)
-        {
-            var save = new LatentWeightsSave();
-            save.Weights = layer.LatentWeights;
-            save.Bias = layer.Bias;
-            save.ActivationFunction = layer.ActivationFunction;
-            LatentWeightsSave[i] = save;
-            i++;
-        }
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var saveJson = JsonSerializer.Serialize(LatentWeightsSave, options);
-        File.WriteAllText(path, saveJson);
-    }
     public void Save(string path)
     {
         var layers = Layers;
-        var LatentWeightsSave = new Save2Bit[Depth];
+        var layersSave = new Save2Bit[Depth];
         int i = 0;
         foreach (var layer in layers)
         {
-            var save = new Save2Bit();
-            save.Weights = layer.Weights;
-            save.Bias = layer.Bias;
-            save.ActivationFunction = layer.ActivationFunction;
-            LatentWeightsSave[i] = save;
+            var save = new Save2Bit
+            {
+                Weights = layer.Weights,
+                Bias = layer.Bias,
+                ActivationFunction = layer.ActivationFunction
+            };
+            layersSave[i] = save;
             i++;
         }
         var options = new JsonSerializerOptions { WriteIndented = true };
-        var saveJson = JsonSerializer.Serialize(LatentWeightsSave, options);
+        options.Converters.Add(new ByteArray2DConverter());
+        var saveJson = JsonSerializer.Serialize(layersSave, options);
         File.WriteAllText(path, saveJson);
     }
-    public static Network2Bit LoadLatent(string path)
+    public void SaveLatent(string path)
     {
-        Network2Bit network2Bit = new Network2Bit();
-        string content = File.ReadAllText(path);
-        LatentWeightsSave[] latentWeights = JsonSerializer.Deserialize<LatentWeightsSave[]>(content);
-        foreach (var layer in latentWeights)
+        var layers = Layers;
+        var layersSave = new LatentWeightsSave[Depth];
+        int i = 0;
+        foreach (var layer in layers)
         {
-            var newLayer = new Layer2Bit(layer.Weights, layer.Bias, layer.ActivationFunction);
-            network2Bit.Layers.Add(newLayer);
+            var save = new LatentWeightsSave
+            {
+                Weights = layer.LatentWeights,
+                Bias = layer.Bias,
+                ActivationFunction = layer.ActivationFunction
+            };
+            layersSave[i] = save;
+            i++;
         }
-        return network2Bit;
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        options.Converters.Add(new TwoDimensionalArrayConverter());
+        var saveJson = JsonSerializer.Serialize(layersSave, options);
+        File.WriteAllText(path, saveJson);
     }
     public static Network2Bit Load(string path)
     {
@@ -147,6 +183,19 @@ public class Network2Bit: INetwork
         }
         return network2Bit;
     }
+    public static Network2Bit LoadLatent(string path)
+    {
+        Network2Bit network2Bit = new Network2Bit();
+        string content = File.ReadAllText(path);
+        LatentWeightsSave[] latentWeights = JsonSerializer.Deserialize<LatentWeightsSave[]>(content);
+        foreach (var layer in latentWeights)
+        {
+            var newLayer = new Layer2Bit(layer.Weights, layer.Bias, layer.ActivationFunction);
+            network2Bit.Layers.Add(newLayer);
+        }
+        return network2Bit;
+    }
+
 
     public void Build()
     {
