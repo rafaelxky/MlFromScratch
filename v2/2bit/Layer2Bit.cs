@@ -4,14 +4,13 @@ using System.Text.Json;
 public class Layer2Bit : ILayer
 {
 
-    public double[,]? LatentWeights { get; set; }
-    public byte[,]? Weights { get; set; }
-    public double[] Bias { get; set; } = Array.Empty<double>();
-    public string ActivationFunction { get; set; } = string.Empty;
-    public IActivationFunction _activationFunction = default!;
-
-    public int NeuronCount => LatentWeights != null ? LatentWeights.GetLength(0) : Weights != null ? Weights.GetLength(0) : 0;
-    public int WeightCount => LatentWeights != null ? LatentWeights.GetLength(1) : Weights != null ? Weights.GetLength(1) * 4 : 0;
+    public double[,] LatentWeights { get; set; }
+    public byte[,] Weights { get; set; }
+    public double[] Bias { get; set; }
+    public string ActivationFunction { get; set; }
+    public IActivationFunction _activationFunction;
+    public int NeuronCount => LatentWeights.GetLength(0);
+    public int WeightCount => LatentWeights.GetLength(1);
 
     // random instantiation
     public Layer2Bit(int neuronCount, int weightCount, Random rand, IActivationFunction activationFunction)
@@ -19,7 +18,7 @@ public class Layer2Bit : ILayer
         ActivationFunction = activationFunction.Name;
         _activationFunction = activationFunction;
         Bias = TensorUtils.NewRandomVector(rand, neuronCount);
-        LatentWeights = TensorUtils.NewRandomMatrixContiguousCentered(rand, neuronCount, weightCount);
+        LatentWeights = TensorUtils.NewRandomMatrixContiguous(rand, neuronCount, weightCount);
     }
     public Layer2Bit(double[,] latentWeights, double[] bias, string activationFunction)
     {
@@ -38,36 +37,21 @@ public class Layer2Bit : ILayer
 
     public double[] ForwardPass(double[] input)
     {
-        if (Weights != null)
+        double[] output = new double[Weights.GetLength(0)];
+        int weightLength = Weights.GetLength(1);
+        // foreach neuron in layer, calc output and build vector
+        for (int i = 0; i < Weights.GetLength(0); i++)
         {
-            int neuronCount = Weights.GetLength(0);
-            int weightLength = WeightCount;
-            double[] output = new double[neuronCount];
-
-            for (int i = 0; i < neuronCount; i++)
-            {
-                output[i] = _activationFunction.Apply(BitUtils.PackedDotProduct(Weights, i, input, weightLength) + Bias[i]);
-            }
-            return output;
+            output[i] = _activationFunction.Apply(BitUtils.PackedDotProduct(Weights, i, input, weightLength) + Bias[i]);
         }
-
-        // If 2-bit packed weights are not available, use latent weights with sign during training.
-        return NeuronMathUtil.ForwardTrain2Bit(GetNeuronWeights(), input, Bias, _activationFunction, out var _);
+        return output;
     }
-
     public void Build()
     {
-        if (LatentWeights == null)
+        int[,] bitmap = new int[LatentWeights.GetLength(0), LatentWeights.GetLength(1)];
+        for (int i = 0; i < LatentWeights.GetLength(0); i++)
         {
-            throw new InvalidOperationException("Cannot build 2-bit weights without latent weights.");
-        }
-
-        int neuronCount = LatentWeights.GetLength(0);
-        int weightCount = LatentWeights.GetLength(1);
-        int[,] bitmap = new int[neuronCount, weightCount];
-        for (int i = 0; i < neuronCount; i++)
-        {
-            for (int j = 0; j < weightCount; j++)
+            for (int j = 0; j < LatentWeights.GetLength(1); j++)
             {
                 bitmap[i, j] = Math.Sign(LatentWeights[i, j]);
             }
@@ -76,10 +60,6 @@ public class Layer2Bit : ILayer
     }
     public double[] ForwardTrain(double[] input, out double[] preActivationValues)
     {
-        if (LatentWeights == null)
-        {
-            throw new InvalidOperationException("Latent weights required for training.");
-        }
         return NeuronMathUtil.ForwardTrain(LatentWeights, input, Bias, _activationFunction, out preActivationValues);
     }
 
@@ -91,28 +71,16 @@ public class Layer2Bit : ILayer
         LayerCache? nextLayerCache
     )
     {
-        if (LatentWeights == null && Weights != null)
-        {
-            LatentWeights = GetNeuronWeights();
-        }
-
-        if (LatentWeights == null)
-        {
-            throw new InvalidOperationException("No latent weights available for backpropagation.");
-        }
-
-        var latent = LatentWeights;
-
         // output layer
         if (target != null && nextLayer == null)
         {
             // for each neuron
-            double[] deltas = new double[latent.GetLength(0)];
-            for (int i = 0; i < latent.GetLength(0); i++)
+            double[] deltas = new double[LatentWeights.GetLength(0)];
+            for (int i = 0; i < LatentWeights.GetLength(0); i++)
             {
                 Console.WriteLine($"i={i} | finalOutput={layerCache.Outputs[i]}, target={target[i]}, preActivation={layerCache.PreActivationValues[i]}, bias={Bias[i]}");
                 NeuronMathUtil.UpdateNeuronAtOutput(
-                    latent,
+                    LatentWeights,
                     i,
                     layerCache.Outputs[i],
                     target[i],
@@ -132,11 +100,11 @@ public class Layer2Bit : ILayer
         else
         {
             // for each neuron
-            double[] deltas = new double[latent.GetLength(0)];
-            for (int i = 0; i < latent.GetLength(0); i++)
+            double[] deltas = new double[LatentWeights.GetLength(0)];
+            for (int i = 0; i < LatentWeights.GetLength(0); i++)
             {
                 NeuronMathUtil.UpdateNeuron(
-                    latent,
+                    LatentWeights,
                     i,
                     nextLayer!,
                     learningRate,
@@ -151,8 +119,6 @@ public class Layer2Bit : ILayer
             }
             layerCache.Deltas = deltas;
         }
-
-        // Note: Call Build() manually when ready to switch to packed forward pass.
     }
     public void SetActivationFunction(IActivationFunction activationFunction)
     {
@@ -161,28 +127,17 @@ public class Layer2Bit : ILayer
 
     public double[,] GetNeuronWeights()
     {
-        if (LatentWeights != null)
+        //return LatentWeights;
+        double[,] signs = new double[LatentWeights.GetLength(0), LatentWeights.GetLength(1)];
+        for (int i = 0; i < LatentWeights.GetLength(0); i++)
         {
-            return LatentWeights;
-        }
-
-        if (Weights != null)
-        {
-            int neuronCount = Weights.GetLength(0);
-            int weightCount = WeightCount;
-            double[,] signs = new double[neuronCount, weightCount];
-
-            for (int i = 0; i < neuronCount; i++)
+            for (int j = 0; j < LatentWeights.GetLength(1); j++)
             {
-                for (int j = 0; j < weightCount; j++)
-                {
-                    signs[i, j] = BitUtils.GetPair(Weights[i, j / 4], j % 4);
-                }
+                signs[i, j] = Math.Sign(LatentWeights[i, j]);
             }
-
-            return signs;
         }
-
-        throw new InvalidOperationException("Layer2Bit has no weights initialized");
+        return signs;
     }
+
+
 }
