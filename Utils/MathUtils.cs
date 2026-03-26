@@ -4,15 +4,20 @@ public static class MathUtils
     {
         var error = CalcErrorAtOutput(finalOutput, targetOutput);
         delta = CalcDelta(preActivation, error, activationFunction);
+        Console.WriteLine("delta at output: " + delta);
+        Console.WriteLine("error at output: " + error);
         return learningRate * delta;
     }
     public static double GetGradientStep(double learningRate, double error, double preActivation, IActivationFunction activationFunction, out double delta)
     {
         delta = CalcDelta(preActivation, error, activationFunction);
+        Console.WriteLine("delta: " + delta);
+        Console.WriteLine("error: " + error);
         return learningRate * delta;
     }
     public static double CalcErrorAtOutput(double finalOutput, double targetOutput)
     {
+        Console.WriteLine($"Error at output: final output:{finalOutput} - targetOutput: {targetOutput} = {finalOutput} - {targetOutput}");
         return finalOutput - targetOutput;
     }
 
@@ -32,6 +37,7 @@ public static class MathUtils
 
     public static double CalcDelta(double preActivation, double error, IActivationFunction activationFunction)
     {
+        Console.WriteLine($"Delta at output: error: {error} * activationFunction({preActivation}): {activationFunction.Derivative(preActivation)}, derivative: {activationFunction.Derivative(preActivation)}");
         return error * activationFunction.Derivative(preActivation);
     }
 

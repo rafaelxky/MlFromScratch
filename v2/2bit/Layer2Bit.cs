@@ -58,24 +58,9 @@ public class Layer2Bit : ILayer
         }
         Weights = BitUtils.PackMatrix(bitmap);
     }
-    public double[] ForwardTrain(double[] input, out LayerCache trainingCache)
+    public double[] ForwardTrain(double[] input, out double[] preActivationValues)
     {
-        trainingCache = new LayerCache
-        {
-            Inputs = (double[])input.Clone()
-        };
-
-        double[] output = new double[NeuronCount];
-        double[] preActivationValues = new double[NeuronCount];
-        for (int i = 0; i < NeuronCount; i++)
-        {
-            output[i] = NeuronMathUtil.Calc2BitNeuronOutput(LatentWeights, i, input, Bias[i], _activationFunction, out var preActivationValue);
-            preActivationValues[i] = preActivationValue;
-        }
-
-        trainingCache.PreActivationValues = (double[])preActivationValues.Clone();
-        trainingCache.Outputs = (double[])output.Clone();
-        return output;
+        return NeuronMathUtil.ForwardTrain(LatentWeights, input, Bias, _activationFunction, out preActivationValues);
     }
 
     public void BackPropagation(
@@ -90,8 +75,8 @@ public class Layer2Bit : ILayer
         if (target != null && nextLayer == null)
         {
             // for each neuron
-            double[] deltas = new double[NeuronCount];
-            for (int i = 0; i < NeuronCount; i++)
+            double[] deltas = new double[LatentWeights.GetLength(0)];
+            for (int i = 0; i < LatentWeights.GetLength(0); i++)
             {
                 NeuronMathUtil.UpdateNeuronAtOutput(
                     LatentWeights,
@@ -112,8 +97,8 @@ public class Layer2Bit : ILayer
         else
         {
             // for each neuron
-            double[] deltas = new double[NeuronCount];
-            for (int i = 0; i < NeuronCount; i++)
+            double[] deltas = new double[LatentWeights.GetLength(0)];
+            for (int i = 0; i < LatentWeights.GetLength(0); i++)
             {
                 NeuronMathUtil.UpdateNeuron(
                     LatentWeights,
@@ -139,7 +124,16 @@ public class Layer2Bit : ILayer
 
     public double[,] GetNeuronWeights()
     {
-        return LatentWeights;
+        //return LatentWeights;
+        double[,] signs = new double[LatentWeights.GetLength(0), LatentWeights.GetLength(1)];
+        for (int i = 0; i < LatentWeights.GetLength(0); i++)
+        {
+            for (int j = 0; j < LatentWeights.GetLength(1); j++)
+            {
+                signs[i, j] = Math.Sign(LatentWeights[i, j]);
+            }
+        }
+        return signs;
     }
 
 

@@ -8,8 +8,7 @@ public class MlNetworkTrainer
     }
     public double[] ForwardTrain(double[] values)
     {
-        var output = _network.ForwardTrain(values, out var layerCaches);
-        _layerCaches = layerCaches;
+        var output = _network.ForwardTrain(values, out _layerCaches);
         return output;
     }
     public void Train(double[] expected, double learningRate)

@@ -107,8 +107,15 @@ public class Network2Bit : INetwork
         double[] output = values;
         foreach (var layer in Layers)
         {
-            output = layer.ForwardTrain(output, out var layerCachesInner);
-            layerCaches.Add(layerCachesInner);
+            var cache = new LayerCache
+            {
+                Inputs = (double[])output.Clone()
+            };
+            output = layer.ForwardTrain(output, out var preActivationValues);
+
+            cache.Outputs = (double[])output.Clone();
+            cache.PreActivationValues = (double[])preActivationValues.Clone();
+            layerCaches.Add(cache);
         }
         return output;
     }
@@ -119,8 +126,15 @@ public class Network2Bit : INetwork
         {
             throw new WrongInputSizeException($"Back propagation input must have length {LastLayer.WeightCount} for this network!");
         }
+
         for (int i = Depth - 1; i >= 0; i--)
         {
+            Console.WriteLine("Cache inputs: " + string.Join(", ", layerCaches[i].Inputs));
+            Console.WriteLine("Cache outputs: " + string.Join(", ", layerCaches[i].Outputs));
+            Console.WriteLine("Cache preActivations: " + string.Join(", ", layerCaches[i].PreActivationValues));
+            var deltaValues = layerCaches[i].Deltas != null ? string.Join(", ", layerCaches[i].Deltas) : "null";
+            Console.WriteLine("Cache deltas: " + string.Join(", ", deltaValues));
+
             Layer2Bit layer = Layers[i];
             // null if last layer
             // next means closer to output
@@ -132,6 +146,9 @@ public class Network2Bit : INetwork
             LayerCache currentLayerCache = layerCaches[i];
             LayerCache? nextLayerCache = (layerCaches.Count > i + 1) ? layerCaches[i + 1] : null;
 
+            // next layer cache may be null and its deltas 0.
+            // error calculation as also returning 0 due to delta.
+
             layer.BackPropagation(
                 nextLayer,
                 targetOutput,
@@ -141,6 +158,7 @@ public class Network2Bit : INetwork
                 );
 
             layerCaches[i] = currentLayerCache;
+            Console.WriteLine("Current layer delta: " + string.Join(", ", currentLayerCache.Deltas));
         }
     }
 

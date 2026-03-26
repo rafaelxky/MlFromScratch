@@ -238,6 +238,11 @@ public class Network : INetwork
 
     public void BackPropagation(double[] expected, double learningRate, List<LayerCache> layerCaches)
     {
+
+        if (expected.Length != LastLayer.NeuronCount)
+        {
+            throw new WrongInputSizeException($"Back propagation input must have length {LastLayer.WeightCount} for this network!");
+        }
         // for each layer
         for (int i = Depth - 1; i >= 0; i--)
         {

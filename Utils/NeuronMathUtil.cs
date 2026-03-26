@@ -14,6 +14,17 @@ public static class NeuronMathUtil
         preActivation = output;
         return activationFunction.Apply(output);
     }
+    public static double[] ForwardTrain2Bit(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
+    {
+        preActivationValues = new double[neuronMatrix.GetLength(0)];
+        double[] output = new double[neuronMatrix.GetLength(0)];
+        for (int i = 0; i < neuronMatrix.GetLength(0); i++)
+        {
+            output[i] = Calc2BitNeuronOutput(neuronMatrix, i, input, bias[i], activationFunction, out var preActivationValue);
+            preActivationValues[i] = preActivationValue;
+        }
+        return output;
+    }
     public static double[] ForwardPass(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction)
     {
         double[] output = new double[neuronMatrix.GetLength(0)];
@@ -57,10 +68,12 @@ public static class NeuronMathUtil
     // updates a single neuron
     public static void UpdateNeuronAtOutput(double[,] layer, int neuronId, double finalOutput, double targetOutput, double preActivation, IActivationFunction activationFunction, double learningRate, double[] neuronInputs, ref double neuronBias, out double delta)
     {
-        var gradientStep = MathUtils.GetGradientStepAtOutput(learningRate, finalOutput, targetOutput, preActivation, activationFunction, out var deltaInner);
-        delta = deltaInner;
+        Console.WriteLine("Final output: " + finalOutput);
+        Console.WriteLine("Target output: " + targetOutput);
+
+        var gradientStep = MathUtils.GetGradientStepAtOutput(learningRate, finalOutput, targetOutput, preActivation, activationFunction, out delta);
         // for each weight
-        for (int i = 0; i < layer.GetLength(0); i++)
+        for (int i = 0; i < layer.GetLength(1); i++)
         {
             layer[neuronId, i] -= gradientStep * neuronInputs[i];
         }

@@ -9,10 +9,11 @@ using System.Text.Json;
 //network.AddNewLayer(3,af);
 //network.AddNewLayer(3,af);
 
-var af = new LeakyReLUActivation();
+var af = new ReLUActivation();
 var savePath = Path.Join("v2save.json");
 
 var network = new Network2Bit(3,3,af);
+//var network = new Network(3,3,af);
 network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
 
@@ -100,9 +101,8 @@ double[][] targets2 =
 
 
 // learning
-/*
-var learningRate = 0.001;
-for (int epoch = 0; epoch < 10000; epoch++)
+var learningRate = 0.01;
+for (int epoch = 0; epoch < 2; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
@@ -113,7 +113,6 @@ for (int epoch = 0; epoch < 10000; epoch++)
     }
     Console.WriteLine("Epoch: " + epoch);
 }
-*/
 
 // final expected values
 double[] values1 = [0.87, 0.65, 0.20];
