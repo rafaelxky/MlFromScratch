@@ -12,7 +12,7 @@ using System.Text.Json;
 var af = new ReLUActivation();
 var savePath = Path.Join("v2save.json");
 
-var network = new Network2Bit(3,3,af);
+var network = new Network(3,3,af);
 //var network = new Network(3,3,af);
 network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
@@ -121,7 +121,7 @@ double[] values3 = [0.12,0.12,0.12];
 double[] values4 = [0.97,0.85,0.32];
 double[] values5 = [0.32,0.85,0.97];
 
-network.Build();
+//network.Build();
 var result1 = network.ForwardPass(values1);
 var result2 = network.ForwardPass(values2);
 var result3 = network.ForwardPass(values3);

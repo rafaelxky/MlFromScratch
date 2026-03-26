@@ -139,5 +139,27 @@ public class Layer2Bit : ILayer
         return signs;
     }
 
+    public static double Calc2BitNeuronOutput(double[,] layer, int neuronId, double[] input, double bias, IActivationFunction activationFunction, out double preActivation)
+    {
+        double output = 0;
+        for (int i = 0; i < layer.GetLength(1); i++)
+        {
+            output += Math.Sign(layer[neuronId, i]) * input[i];
+        }
+        output += bias;
+        preActivation = output;
+        return activationFunction.Apply(output);
+    }
 
+    public static double[] ForwardTrain2Bit(double[,] neuronMatrix, double[] input, double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
+    {
+        preActivationValues = new double[neuronMatrix.GetLength(0)];
+        double[] output = new double[neuronMatrix.GetLength(0)];
+        for (int i = 0; i < neuronMatrix.GetLength(0); i++)
+        {
+            output[i] = Calc2BitNeuronOutput(neuronMatrix, i, input, bias[i], activationFunction, out var preActivationValue);
+            preActivationValues[i] = preActivationValue;
+        }
+        return output;
+    }
 }
