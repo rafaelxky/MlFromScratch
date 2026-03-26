@@ -60,8 +60,9 @@ public class Network2Bit : INetwork
     }
     public double[] ForwardPassSimd(double[] values)
     {
-        values.CopyTo(bufferA, 0);
+        Console.WriteLine("Forward pass simd input: " + string.Join(", ", values));
 
+        values.CopyTo(bufferA, 0);
         // layer input
         double[] current = bufferA;
         // layer output
@@ -69,10 +70,13 @@ public class Network2Bit : INetwork
 
         foreach (var layer in Layers)
         {
+            // note: do not use input.lenght
             SimdBitUtils.ForwardPass(layer, current, next);
             (current, next) = (next, current);
         }
-        return current[..Layers[^1].NeuronCount];
+        var output = current[..Layers[^1].Weights.GetLength(0)];
+        Console.WriteLine("Forward pass simd result: " + string.Join(", ", output));
+        return output;
     }
     public double[] ForwardPassCpu(double[] values)
     {

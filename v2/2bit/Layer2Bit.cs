@@ -3,6 +3,7 @@ using System.Text.Json;
 
 public class Layer2Bit : ILayer
 {
+
     public double[,] LatentWeights { get; set; }
     public byte[,] Weights { get; set; }
     public double[] Bias { get; set; }
@@ -36,11 +37,12 @@ public class Layer2Bit : ILayer
 
     public double[] ForwardPass(double[] input)
     {
-        double[] output = new double[Weights.Length];
+        double[] output = new double[Weights.GetLength(0)];
+        int weightLength = Weights.GetLength(1);
         // foreach neuron in layer, calc output and build vector
-        for (int i = 0; i < Weights.Length; i++)
+        for (int i = 0; i < Weights.GetLength(0); i++)
         {
-            output[i] = _activationFunction.Apply(BitUtils.PackedDotProduct(Weights, i, input, input.Length) + Bias[i]);
+            output[i] = _activationFunction.Apply(BitUtils.PackedDotProduct(Weights, i, input, weightLength) + Bias[i]);
         }
         return output;
     }
@@ -58,9 +60,9 @@ public class Layer2Bit : ILayer
     }
     public double[] ForwardTrain(double[] input, out LayerCache trainingCache)
     {
-        var cache = new LayerCache
+        trainingCache = new LayerCache
         {
-            Inputs = input
+            Inputs = (double[])input.Clone()
         };
 
         double[] output = new double[NeuronCount];
@@ -71,9 +73,8 @@ public class Layer2Bit : ILayer
             preActivationValues[i] = preActivationValue;
         }
 
-        cache.PreActivationValues = preActivationValues;
-        cache.Outputs = output;
-        trainingCache = cache;
+        trainingCache.PreActivationValues = (double[])preActivationValues.Clone();
+        trainingCache.Outputs = (double[])output.Clone();
         return output;
     }
 

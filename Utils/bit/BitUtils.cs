@@ -77,11 +77,11 @@ public static class BitUtils
         return -1;
     }
 
-    public static double PackedDotProduct(byte[,] layer, int neuronId, double[] values, int lenght)
+    public static double PackedDotProduct(byte[,] layer, int neuronId, double[] values, int length)
     {
         double sum = 0;
 
-        for (int i = 0; i < lenght; i++)
+        for (int i = 0; i < length; i++)
         {
             int byteIndex = i / 4;
             int pairIndex = i % 4;

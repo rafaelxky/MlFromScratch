@@ -100,6 +100,7 @@ double[][] targets2 =
 
 
 // learning
+/*
 var learningRate = 0.001;
 for (int epoch = 0; epoch < 10000; epoch++)
 {
@@ -112,6 +113,7 @@ for (int epoch = 0; epoch < 10000; epoch++)
     }
     Console.WriteLine("Epoch: " + epoch);
 }
+*/
 
 // final expected values
 double[] values1 = [0.87, 0.65, 0.20];
@@ -135,7 +137,7 @@ Console.WriteLine("4Final:" + string.Join(" ", result4));
 Console.WriteLine("5Final:" + string.Join(" ", result5));
 //Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
 
-network.Save(savePath);
+network.SaveLatent(savePath);
 
 // save
 //NetworkSerializer.Save(network, "newSerTest.json");

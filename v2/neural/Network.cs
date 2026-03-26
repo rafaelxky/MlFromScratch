@@ -112,7 +112,7 @@ public class Network : INetwork
             (current, next) = (next, current);
         }
 
-        return current[..Layers[^1].NeuronCount];
+        return current[..Layers[^1].Neurons.GetLength(0)];
     }
     public double[] ForwardPassSimdParallel(double[] values)
     {
