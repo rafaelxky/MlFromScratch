@@ -102,7 +102,7 @@ double[][] targets2 =
 
 // learning
 var learningRate = 0.01;
-for (int epoch = 0; epoch < 1; epoch++)
+for (int epoch = 0; epoch < 1000; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
