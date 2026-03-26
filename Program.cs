@@ -9,15 +9,14 @@ using System.Text.Json;
 //network.AddNewLayer(3,af);
 //network.AddNewLayer(3,af);
 
-var af = new ReLUActivation();
+var af = new LeakyReLUActivation();
 var savePath = Path.Join("v2save.json");
 
-var network = new Network(3,3,af);
 //var network = new Network(3,3,af);
-network.AddNewLayer(5,af);
-network.AddNewLayer(3,af);
+//network.AddNewLayer(5,af);
+//network.AddNewLayer(3,af);
 
-//var network = Network.Load(savePath);
+var network = Network.Load(savePath);
 network.Config.AccelerationType = AccelerationType.SimdParallel;
 var trainer = new MlNetworkTrainer(network);
 
@@ -102,7 +101,7 @@ double[][] targets2 =
 
 // learning
 var learningRate = 0.01;
-for (int epoch = 0; epoch < 1000; epoch++)
+for (int epoch = 0; epoch < 100; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
@@ -136,7 +135,5 @@ Console.WriteLine("4Final:" + string.Join(" ", result4));
 Console.WriteLine("5Final:" + string.Join(" ", result5));
 //Console.WriteLine("For: depth - " + network.Depth + " - learningRate - " + learningRate);
 
-//network.SaveLatent(savePath);
+network.Save(savePath);
 
-// save
-//NetworkSerializer.Save(network, "newSerTest.json");
