@@ -9,8 +9,8 @@ public class Network2Bit : INetwork
     private Random _random;
     public NetworkConfig Config;
 
-    double[] bufferA;
-    double[] bufferB;
+    double[] bufferA = Array.Empty<double>();
+    double[] bufferB = Array.Empty<double>();
     public int MaxSize = 0;
 
     public Network2Bit()
@@ -72,16 +72,17 @@ public class Network2Bit : INetwork
             SimdBitUtils.ForwardPass(layer, current, next);
             (current, next) = (next, current);
         }
-        var output = current[..Layers[^1].Weights.GetLength(0)];
+        var output = current[..Layers[^1].NeuronCount];
         return output;
     }
     public double[] ForwardPassSimdParallel(double[] values)
     {
         values.CopyTo(bufferA, 0);
+
         // layer input
-        double[] current = bufferA;
+        double[] current = new double[MaxSize];
         // layer output
-        double[] next = bufferB;
+        double[] next = new double[MaxSize];
 
         foreach (var layer in Layers)
         {
@@ -89,7 +90,7 @@ public class Network2Bit : INetwork
             SimdBitUtils.ForwardPassParallel(layer, current, next);
             (current, next) = (next, current);
         }
-        var output = current[..Layers[^1].Weights.GetLength(0)];
+        var output = current[..Layers[^1].NeuronCount];
         return output;
     }
     public double[] ForwardPassCpu(double[] values)
@@ -149,8 +150,8 @@ public class Network2Bit : INetwork
 
         foreach (var layer in Layers)
         {
-            int inputSize = layer.LatentWeights.GetLength(1);
-            int outputSize = layer.LatentWeights.GetLength(0);
+            int inputSize = layer.WeightCount;
+            int outputSize = layer.NeuronCount;
             var cache = new LayerCache
             {
                 Inputs = current[..inputSize].ToArray()
@@ -177,8 +178,8 @@ public class Network2Bit : INetwork
 
         foreach (var layer in Layers)
         {
-            int inputSize = layer.LatentWeights.GetLength(1);
-            int outputSize = layer.LatentWeights.GetLength(0);
+            int inputSize = layer.WeightCount;
+            int outputSize = layer.NeuronCount;
             var cache = new LayerCache
             {
                 Inputs = current[..inputSize].ToArray()
@@ -252,7 +253,7 @@ public class Network2Bit : INetwork
         {
             var save = new Save2Bit
             {
-                Weights = layer.Weights,
+                Weights = layer.Weights ?? throw new InvalidOperationException("No packed weights to save"),
                 Bias = layer.Bias,
                 ActivationFunction = layer.ActivationFunction
             };
@@ -273,7 +274,7 @@ public class Network2Bit : INetwork
         {
             var save = new LatentWeightsSave
             {
-                Weights = layer.LatentWeights,
+                Weights = layer.LatentWeights ?? throw new InvalidOperationException("No latent weights to save"),
                 Bias = layer.Bias,
                 ActivationFunction = layer.ActivationFunction
             };
@@ -289,7 +290,9 @@ public class Network2Bit : INetwork
     {
         Network2Bit network2Bit = new Network2Bit();
         string content = File.ReadAllText(path);
-        Save2Bit[] weights = JsonSerializer.Deserialize<Save2Bit[]>(content);
+        Save2Bit[]? weights = JsonSerializer.Deserialize<Save2Bit[]>(content);
+        if (weights == null) throw new FileLoadException($"Cannot load 2-bit network from {path}");
+
         foreach (var layer in weights)
         {
             var newLayer = new Layer2Bit(layer.Weights, layer.Bias, layer.ActivationFunction);
@@ -301,7 +304,9 @@ public class Network2Bit : INetwork
     {
         Network2Bit network2Bit = new Network2Bit();
         string content = File.ReadAllText(path);
-        LatentWeightsSave[] latentWeights = JsonSerializer.Deserialize<LatentWeightsSave[]>(content);
+        LatentWeightsSave[]? latentWeights = JsonSerializer.Deserialize<LatentWeightsSave[]>(content);
+        if (latentWeights == null) throw new FileLoadException($"Cannot load latent network from {path}");
+
         foreach (var layer in latentWeights)
         {
             var newLayer = new Layer2Bit(layer.Weights, layer.Bias, layer.ActivationFunction);

@@ -6,21 +6,19 @@ public static class SimdBitUtils
 {
     public static void ForwardPass(Layer2Bit layers, double[] input, double[] outputBuffer)
     {
+        if (layers.Weights == null) throw new InvalidOperationException("Simd forward path requires packed weights.");
+
         var weights = layers.Weights;
         var activationFunction = layers._activationFunction;
-        var weightLength = layers.Weights.GetLength(1);
-        // for each neuron in layer, calc output and build vector
-        for (int i = 0; i < weights.GetLength(0); i++)
+        var weightLength = layers.WeightCount;
+        int neuronCount = layers.NeuronCount;
+
+        for (int i = 0; i < neuronCount; i++)
         {
-            var output = PackedDotProduct(layers.Weights, i, input, weightLength);
+            var output = PackedDotProduct(weights, i, input, weightLength);
             output += layers.Bias[i];
-            output = activationFunction.Apply(output);
-            outputBuffer[i] = output;
+            outputBuffer[i] = activationFunction.Apply(output);
         }
-    }
-    public static void ForwardTrainParallel(Layer2Bit layers, double[] input, double[] outputBuffer, out double[] preActivationValues)
-    {
-        ParallelUtils.ForwardTrain(layers.GetNeuronWeights(), input, outputBuffer, layers.Bias, layers._activationFunction, out preActivationValues);
     }
     public static void ForwardTrain(Layer2Bit layers, double[] input, double[] outputBuffer, out double[] preActivationValues)
     {
@@ -29,49 +27,124 @@ public static class SimdBitUtils
 
     public static void ForwardPassParallel(Layer2Bit layers, double[] input, double[] outputBuffer)
     {
+        if (layers.Weights == null) throw new InvalidOperationException("Simd parallel forward path requires packed weights.");
+
         var weights = layers.Weights;
         var activationFunction = layers._activationFunction;
-        var weightLength = layers.Weights.GetLength(1);
-        // for each neuron in layer, calc output and build vector
-        Parallel.For(0, weights.GetLength(0), i =>
+        var weightLength = layers.WeightCount;
+        int neuronCount = layers.NeuronCount;
+
+        Parallel.For(0, neuronCount, i =>
         {
-            outputBuffer[i] = activationFunction.Apply(PackedDotProduct(layers.Weights, i, input, weightLength) + layers.Bias[i]);
+            outputBuffer[i] = activationFunction.Apply(PackedDotProduct(weights, i, input, weightLength) + layers.Bias[i]);
         });
+    }
+
+    public static void ForwardTrainParallel(Layer2Bit layers, double[] input, double[] outputBuffer, out double[] preActivationValues)
+    {
+        var weights = layers.LatentWeights ?? throw new InvalidOperationException("Simd parallel training requires latent weights.");
+        var activationFunction = layers._activationFunction;
+        var neuronCount = weights.GetLength(0);
+        preActivationValues = new double[neuronCount];
+        var pre = preActivationValues;
+        // for each neuron in layer, calc output and build vector
+        Parallel.For(0, neuronCount, i =>
+        {
+            var preAct = WeightInputDotProd(weights, i, input) + layers.Bias[i];
+            pre[i] = preAct;
+            outputBuffer[i] = activationFunction.Apply(preAct);
+        });
+    }
+
+
+    public static unsafe double WeightInputDotProd(double[,] neurons, int neuronId, double[] input)
+    {
+        int len = neurons.GetLength(1);
+        double result = 0;
+
+        fixed (double* pN = neurons, pI = input)
+        {
+            double* row = pN + neuronId * len;
+
+            if (Avx.IsSupported && Fma.IsSupported)
+            {
+                int i = 0;
+                var acc = Vector256<double>.Zero;
+                var zero = Vector256<double>.Zero;
+                var one = Vector256.Create(1.0);
+                var negOne = Vector256.Create(-1.0);
+
+                for (; i <= len - 4; i += 4)
+                {
+                    var w = Avx.LoadVector256(row + i);
+                    var inp = Avx.LoadVector256(pI + i);
+
+                    // mask = w >= 0
+                    var mask = Avx.CompareGreaterThanOrEqual(w, zero);
+
+                    // sign = mask ? +1 : -1
+                    var sign = Avx.BlendVariable(negOne, one, mask);
+
+                    acc = Fma.MultiplyAdd(sign, inp, acc);
+                }
+
+                var low = acc.GetLower();
+                var high = acc.GetUpper();
+                var sum2 = Sse2.Add(low, high);
+                var shuf = Sse2.UnpackHigh(sum2, sum2);
+                result = Sse2.AddScalar(sum2, shuf).ToScalar();
+
+                for (; i < len; i++)
+                {
+                    result += (row[i] >= 0 ? 1.0 : -1.0) * pI[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < len; i++)
+                {
+                    result += (row[i] >= 0 ? 1.0 : -1.0) * pI[i];
+                }
+            }
+        }
+
+        return result;
     }
 
     public static double PackedDotProduct(byte[,] layer, int neuronId, double[] values, int weightLength)
     {
         // values.length => layer.GetLength(0) * 4
         // this is because values uses a buffer so it may be larger than the actual input size, so we need to use weightLength to know how many values to actually use
-        double sum = 0;
-        int rowLen = (weightLength + 3) / 4;
 
         if (!Avx2.IsSupported)
         {
             return BitUtils.PackedDotProduct(layer, neuronId, values, weightLength);
         }
-        Vector256<byte> mask = Vector256.Create((byte)0x03);
-        int b = 0;
 
+        // AVX2-enabled path: use block decoding with explicit 2-bit decode and avoid cross-byte vector shift mistakes.
+        double sum = 0;
+        int rowLen = (weightLength + 3) / 4;
+
+        int b = 0;
         for (; b <= rowLen - 32; b += 32)
         {
             unsafe
             {
                 fixed (byte* p = &layer[neuronId, b])
                 {
-                    Vector256<byte> raw = Avx2.LoadVector256(p);
-
-                    Vector256<byte> p0 = Avx2.And(raw, mask);
-                    Vector256<byte> p1 = Avx2.And(Avx2.ShiftRightLogical(raw.AsUInt16(), 2).AsByte(), mask);
-                    Vector256<byte> p2 = Avx2.And(Avx2.ShiftRightLogical(raw.AsUInt16(), 4).AsByte(), mask);
-                    Vector256<byte> p3 = Avx2.And(Avx2.ShiftRightLogical(raw.AsUInt16(), 6).AsByte(), mask);
-
-                    for (int lane = 0; lane < 32; lane++)
+                    for (int byteIdx = 0; byteIdx < 32; byteIdx++)
                     {
-                        int i0 = (b + lane) * 4 + 0; if (i0 < weightLength) sum += p0.GetElement(lane) * values[i0];
-                        int i1 = (b + lane) * 4 + 1; if (i1 < weightLength) sum += p1.GetElement(lane) * values[i1];
-                        int i2 = (b + lane) * 4 + 2; if (i2 < weightLength) sum += p2.GetElement(lane) * values[i2];
-                        int i3 = (b + lane) * 4 + 3; if (i3 < weightLength) sum += p3.GetElement(lane) * values[i3];
+                        byte packed = p[byteIdx];
+                        int baseI = (b + byteIdx) * 4;
+
+                        if (baseI + 0 < weightLength)
+                            sum += BitUtils.Decode((byte)(packed & 0x03)) * values[baseI + 0];
+                        if (baseI + 1 < weightLength)
+                            sum += BitUtils.Decode((byte)((packed >> 2) & 0x03)) * values[baseI + 1];
+                        if (baseI + 2 < weightLength)
+                            sum += BitUtils.Decode((byte)((packed >> 4) & 0x03)) * values[baseI + 2];
+                        if (baseI + 3 < weightLength)
+                            sum += BitUtils.Decode((byte)((packed >> 6) & 0x03)) * values[baseI + 3];
                     }
                 }
             }
@@ -83,5 +156,15 @@ public static class SimdBitUtils
         }
 
         return sum;
+    }
+
+    public static void ForwardTrain(double[,] neuronMatrix, double[] input, double[] outputBuffer, double[] bias, IActivationFunction activationFunction, out double[] preActivationValues)
+    {
+        preActivationValues = new double[neuronMatrix.GetLength(0)];
+        var pre = preActivationValues;
+        Parallel.For(0, neuronMatrix.GetLength(0), i =>
+        {
+            outputBuffer[i] = SimdUtils.CalcNeuronOutput(neuronMatrix, i, input, bias[i], activationFunction, out pre[i]);
+        });
     }
 }

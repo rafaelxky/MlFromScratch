@@ -17,18 +17,34 @@ public static class TensorUtils
     }
     public static double[,] NewRandomMatrixContiguous(Random random, int rows, int cols)
     {
-        double[,] matrix = new double[rows, cols]; 
+        double[,] matrix = new double[rows, cols];
 
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
             {
-                matrix[i, j] = random.NextDouble(); 
+                matrix[i, j] = random.NextDouble();
             }
         }
 
         return matrix;
     }
+    
+    public static double[,] NewRandomMatrixContiguousCentered(Random random, int rows, int cols)
+    {
+        double[,] matrix = new double[rows, cols];
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                matrix[i, j] = random.NextDouble() * 2 - 1;
+            }
+        }
+
+        return matrix;
+    }
+
     public static double[] NewRandomVector(Random random, int size)
     {
         var vector = new double[size];
@@ -49,13 +65,23 @@ public static class TensorUtils
         }
         return output;
     }
-    
+
     public static double WeightInputDotProd(double[,] neurons, int neuronId, double[] input)
     {
         double output = 0;
         for (int i = 0; i < neurons.GetLength(1); i++)
         {
-            output += neurons[neuronId,i] * input[i];
+            output += neurons[neuronId, i] * input[i];
+        }
+        return output;
+    }
+
+    public static double WeightInputDotProdSigned(double[,] neurons, int neuronId, double[] input)
+    {
+        double output = 0;
+        for (int i = 0; i < neurons.GetLength(1); i++)
+        {
+            output += Math.Sign(neurons[neuronId, i]) * input[i];
         }
         return output;
     }
@@ -69,5 +95,5 @@ public static class TensorUtils
         return flatMatrix;
     }
 
-    
+
 }

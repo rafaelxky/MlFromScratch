@@ -9,7 +9,7 @@ using System.Text.Json;
 //network.AddNewLayer(3,af);
 //network.AddNewLayer(3,af);
 
-var af = new ReLUActivation();
+var af = new SigmoidActivation();
 var savePath = Path.Join("v2save.json");
 
 var network = new Network2Bit(3,3,af);
@@ -18,7 +18,7 @@ network.AddNewLayer(5,af);
 network.AddNewLayer(3,af);
 
 //var network = Network.Load(savePath);
-network.Config.AccelerationType = AccelerationType.SimdParallel;
+network.Config.AccelerationType = AccelerationType.Scalar;
 var trainer = new MlNetworkTrainer(network);
 
 // todo: implement gpu in backprop
@@ -102,7 +102,7 @@ double[][] targets2 =
 
 // learning
 var learningRate = 0.01;
-for (int epoch = 0; epoch < 1000; epoch++)
+for (int epoch = 0; epoch < 500; epoch++)
 {
     for (int i = 0; i < inputs2.Length; i++)
     {
