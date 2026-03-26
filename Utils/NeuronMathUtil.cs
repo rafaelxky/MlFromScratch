@@ -68,9 +68,6 @@ public static class NeuronMathUtil
     // updates a single neuron
     public static void UpdateNeuronAtOutput(double[,] layer, int neuronId, double finalOutput, double targetOutput, double preActivation, IActivationFunction activationFunction, double learningRate, double[] neuronInputs, ref double neuronBias, out double delta)
     {
-        Console.WriteLine("Final output: " + finalOutput);
-        Console.WriteLine("Target output: " + targetOutput);
-
         var gradientStep = MathUtils.GetGradientStepAtOutput(learningRate, finalOutput, targetOutput, preActivation, activationFunction, out delta);
         // for each weight
         for (int i = 0; i < layer.GetLength(1); i++)

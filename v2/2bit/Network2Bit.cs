@@ -60,8 +60,6 @@ public class Network2Bit : INetwork
     }
     public double[] ForwardPassSimd(double[] values)
     {
-        Console.WriteLine("Forward pass simd input: " + string.Join(", ", values));
-
         values.CopyTo(bufferA, 0);
         // layer input
         double[] current = bufferA;
@@ -75,7 +73,6 @@ public class Network2Bit : INetwork
             (current, next) = (next, current);
         }
         var output = current[..Layers[^1].Weights.GetLength(0)];
-        Console.WriteLine("Forward pass simd result: " + string.Join(", ", output));
         return output;
     }
     public double[] ForwardPassCpu(double[] values)
@@ -129,12 +126,6 @@ public class Network2Bit : INetwork
 
         for (int i = Depth - 1; i >= 0; i--)
         {
-            Console.WriteLine("Cache inputs: " + string.Join(", ", layerCaches[i].Inputs));
-            Console.WriteLine("Cache outputs: " + string.Join(", ", layerCaches[i].Outputs));
-            Console.WriteLine("Cache preActivations: " + string.Join(", ", layerCaches[i].PreActivationValues));
-            var deltaValues = layerCaches[i].Deltas != null ? string.Join(", ", layerCaches[i].Deltas) : "null";
-            Console.WriteLine("Cache deltas: " + string.Join(", ", deltaValues));
-
             Layer2Bit layer = Layers[i];
             // null if last layer
             // next means closer to output
@@ -158,7 +149,6 @@ public class Network2Bit : INetwork
                 );
 
             layerCaches[i] = currentLayerCache;
-            Console.WriteLine("Current layer delta: " + string.Join(", ", currentLayerCache.Deltas));
         }
     }
 
